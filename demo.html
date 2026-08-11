@@ -216,17 +216,22 @@
       margin-top: 60px;
     }
 
-    /* FIX: FIXED VIEWPORT OVERLAY CONTAINER FOR CHAT WIDGET */
+    /* COMPACT WIDGET HEIGHT (MATCHING RED HIGHLIGHT AREA) */
     #chat-widget-container {
       position: fixed !important;
       bottom: 20px !important;
       right: 20px !important;
-      width: 400px !important;
-      height: 580px !important;
+      width: 380px !important;
+      height: 280px !important; /* Compact Red Highlighted Height */
       max-width: calc(100vw - 30px) !important;
-      max-height: calc(100vh - 40px) !important;
       z-index: 999999 !important;
-      pointer-events: none; /* Passes clicks through empty area when closed */
+      pointer-events: none;
+      transition: height 0.3s ease;
+    }
+
+    /* Expanded state class when clicking expand button */
+    #chat-widget-container.expanded {
+      height: 580px !important;
     }
 
     #chat-widget-container chat-messenger {
@@ -242,7 +247,7 @@
       height: 100% !important;
       border-radius: 16px !important;
       overflow: hidden !important;
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35) !important;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4) !important;
     }
   </style>
 </head>
@@ -308,7 +313,7 @@
     <div class="demo-notice">
       <i class="fa-solid fa-circle-info"></i>
       <div>
-        <strong>Demonstration Environment:</strong> Use the interactive HCA AI Assistant floating at the bottom right corner of your screen.
+        <strong>Demonstration Environment:</strong> Use the compact HCA AI Assistant window floating at the bottom right corner of your screen.
       </div>
     </div>
   </main>
@@ -318,7 +323,7 @@
     <p>&copy; 2026 HCA Healthcare Inc. All rights reserved. | Demo Portal powered by Vertex AI Agent Builder</p>
   </footer>
 
-  <!-- FLOATING CHAT WIDGET CONTAINER -->
+  <!-- COMPACT CHAT WIDGET CONTAINER -->
   <div id="chat-widget-container">
     <chat-messenger
       url-allowlist="*"
@@ -336,14 +341,15 @@
           title-text="Start new chat"
         ></chat-reset-session-button>
 
-        <!-- EXPAND / FULLSCREEN TOGGLE BUTTON -->
+        <!-- EXPAND / COLLAPSE TOGGLE BUTTON -->
         <chat-toggle-dialog-button
           slot="titlebar-actions"
           title-text-expanded="Collapse"
           title-text-collapsed="Expand"
+          onclick="toggleExpandWidget()"
         ></chat-toggle-dialog-button>
 
-        <!-- MINIMIZE / CLOSE BUTTON -->
+        <!-- MINIMIZE BUTTON -->
         <chat-messenger-close-button
           slot="titlebar-actions"
           title-text="Minimize chat"
@@ -352,7 +358,7 @@
     </chat-messenger>
   </div>
 
-  <!-- SCRIPT TO REGISTER AND OPEN CHAT -->
+  <!-- SCRIPT TO REGISTER AND CONTROL COMPACT WIDGET -->
   <script>
     window.addEventListener("chat-messenger-loaded", () => {
       chatSdk.registerContext(
@@ -383,6 +389,13 @@
         const btn = messenger.shadowRoot.querySelector('button') || 
                     messenger.shadowRoot.querySelector('[role="button"]');
         if (btn) btn.click();
+      }
+    }
+
+    function toggleExpandWidget() {
+      const container = document.getElementById('chat-widget-container');
+      if (container) {
+        container.classList.toggle('expanded');
       }
     }
   </script>
