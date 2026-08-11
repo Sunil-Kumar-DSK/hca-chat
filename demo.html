@@ -74,11 +74,20 @@
     .portal-btn {
       background-color: #0072CE;
       color: #ffffff;
-      padding: 8px 18px;
+      padding: 10px 20px;
       border-radius: 4px;
       text-decoration: none;
       font-weight: 600;
       font-size: 14px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.2s;
+    }
+    .portal-btn:hover {
+      background-color: #00569e;
     }
 
     /* Hero Banner */
@@ -86,7 +95,7 @@
       background: linear-gradient(135deg, rgba(0, 45, 98, 0.88), rgba(0, 114, 206, 0.82)), 
                   url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
       color: #ffffff;
-      padding: 80px 5%;
+      padding: 70px 5%;
       text-align: center;
     }
     .hero h1 {
@@ -97,38 +106,39 @@
     .hero p {
       font-size: 18px;
       max-width: 700px;
-      margin: 0 auto 30px;
+      margin: 0 auto 25px;
       color: #e2e8f0;
     }
-    .hero-search {
-      max-width: 550px;
-      margin: 0 auto;
+    .hero-actions {
       display: flex;
-      background: #ffffff;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+    .hero-chat-btn {
+      background-color: #00A3E0;
+      color: #ffffff;
+      padding: 12px 26px;
       border-radius: 30px;
-      overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-    .hero-search input {
-      flex: 1;
-      padding: 14px 22px;
-      border: none;
-      outline: none;
+      font-weight: 700;
       font-size: 15px;
-    }
-    .hero-search button {
-      background: #0072CE;
       border: none;
-      color: white;
-      padding: 0 24px;
       cursor: pointer;
-      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+    .hero-chat-btn:hover {
+      background-color: #0082b3;
+      transform: translateY(-2px);
     }
 
     /* Portal Cards */
     .main-container {
       max-width: 1200px;
-      margin: -40px auto 40px;
+      margin: -30px auto 40px;
       padding: 0 20px;
     }
     .cards-grid {
@@ -144,9 +154,14 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       transition: transform 0.2s, box-shadow 0.2s;
     }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    .card.interactive-card {
+      border: 2px solid #0072CE;
+      background-color: #f8fbff;
+      cursor: pointer;
+    }
+    .card.interactive-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 24px rgba(0, 114, 206, 0.25);
     }
     .card-icon {
       font-size: 32px;
@@ -161,6 +176,16 @@
     .card p {
       font-size: 14px;
       color: #666666;
+      margin-bottom: 16px;
+    }
+    .card-btn {
+      display: inline-block;
+      padding: 8px 18px;
+      background-color: #0072CE;
+      color: #ffffff;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 13px;
     }
 
     /* Notice Banner */
@@ -189,25 +214,14 @@
       margin-top: 60px;
     }
 
-    /* FLOATING CHAT WIDGET POSITIONING & RESIZING SUPPORTS */
+    /* OFFICIAL VERTEX AI WIDGET CUSTOM CSS VARIABLES */
     chat-messenger {
       position: fixed !important;
-      bottom: 20px !important;
-      right: 20px !important;
+      bottom: 24px !important;
+      right: 24px !important;
       z-index: 999999 !important;
       --chat-messenger-width: 410px;
-      --chat-messenger-height: 590px;
-    }
-
-    /* Responsive Chat Container */
-    chat-messenger-container {
-      width: 410px !important;
-      height: 590px !important;
-      max-width: calc(100vw - 30px) !important;
-      max-height: calc(100vh - 60px) !important;
-      border-radius: 16px !important;
-      overflow: hidden !important;
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35) !important;
+      --chat-messenger-height: 580px;
     }
   </style>
 </head>
@@ -224,16 +238,19 @@
       <li><a href="#">Services</a></li>
       <li><a href="#">Pay a Bill</a></li>
     </ul>
-    <a href="#" class="portal-btn"><i class="fa-solid fa-user-lock"></i> MyHealthOne Portal</a>
+    <button class="portal-btn" onclick="openAgentChat()">
+      <i class="fa-solid fa-comments"></i> Ask AI Assistant
+    </button>
   </header>
 
   <!-- HERO BANNER -->
   <section class="hero">
     <h1>Welcome to HCA Patient Services</h1>
     <p>Access compassionate care, manage billing, or speak with our AI Assistant 24/7.</p>
-    <div class="hero-search">
-      <input type="text" placeholder="Search conditions, doctors, or services...">
-      <button><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+    <div class="hero-actions">
+      <button class="hero-chat-btn" onclick="openAgentChat()">
+        <i class="fa-solid fa-headset"></i> Start Chat with AI Assistant
+      </button>
     </div>
   </section>
 
@@ -255,17 +272,19 @@
         <h3>Account Lookup</h3>
         <p>Connected securely to BigQuery for authenticated account servicing.</p>
       </div>
-      <div class="card">
+      <!-- CLICKABLE CARD TO OPEN CHAT -->
+      <div class="card interactive-card" onclick="openAgentChat()">
         <div class="card-icon"><i class="fa-solid fa-robot"></i></div>
         <h3>24/7 AI Assistant</h3>
-        <p>Use the titlebar controls to expand or minimize the chat window at any time.</p>
+        <p>Click here or use the floating launcher at the bottom right to open chat.</p>
+        <span class="card-btn"><i class="fa-solid fa-comments"></i> Open Agent Chat</span>
       </div>
     </div>
 
     <div class="demo-notice">
       <i class="fa-solid fa-circle-info"></i>
       <div>
-        <strong>Demonstration Environment:</strong> Use the buttons on top-right of the chat window to <strong>Expand</strong>, <strong>Reset</strong>, or <strong>Minimize</strong> the assistant.
+        <strong>Demonstration Environment:</strong> Click the <strong>"24/7 AI Assistant"</strong> card above or the blue floating button at the bottom right corner to open the chat agent.
       </div>
     </div>
   </main>
@@ -275,7 +294,7 @@
     <p>&copy; 2026 HCA Healthcare Inc. All rights reserved. | Demo Portal powered by Vertex AI Agent Builder</p>
   </footer>
 
-  <!-- VERTEX AI BODY SECTION SCRIPTS -->
+  <!-- JAVASCRIPT TO REGISTER & CONTROL WIDGET -->
   <script>
     window.addEventListener("chat-messenger-loaded", () => {
       chatSdk.registerContext(
@@ -288,9 +307,25 @@
         }),
       );
     });
+
+    // Reliable Function to Open Chat Agent on Click
+    function openAgentChat() {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      if (messenger.shadowRoot) {
+        const shadowBtn = messenger.shadowRoot.querySelector('button') || 
+                          messenger.shadowRoot.querySelector('[role="button"]');
+        if (shadowBtn) {
+          shadowBtn.click();
+          return;
+        }
+      }
+      messenger.click();
+    }
   </script>
 
-  <!-- VERTEX AI CHAT MESSENGER CUSTOM TAG WITH TITLEBAR ACTIONS -->
+  <!-- VERTEX AI CHAT MESSENGER WIDGET -->
   <chat-messenger
     url-allowlist="*"
     color-scheme="dark"
@@ -307,7 +342,7 @@
         title-text="Start new chat"
       ></chat-reset-session-button>
 
-      <!-- EXPAND / FULLSCREEN BUTTON -->
+      <!-- EXPAND / COLLAPSE BUTTON -->
       <chat-toggle-dialog-button
         slot="titlebar-actions"
         title-text-expanded="Restore standard size"
