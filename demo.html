@@ -20,12 +20,13 @@
       margin: 0;
       padding: 0;
     }
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: #f4f7f9;
       color: #333333;
       line-height: 1.6;
-      padding-bottom: 80px; /* Space for footer and widget */
     }
 
     /* Header & Navigation */
@@ -79,6 +80,11 @@
       text-decoration: none;
       font-weight: 600;
       font-size: 14px;
+      cursor: pointer;
+      border: none;
+    }
+    .portal-btn:hover {
+      background-color: #00569e;
     }
 
     /* Hero Banner */
@@ -86,54 +92,51 @@
       background: linear-gradient(135deg, rgba(0, 45, 98, 0.9), rgba(0, 114, 206, 0.8)), 
                   url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
       color: #ffffff;
-      padding: 80px 5%;
+      padding: 70px 5%;
       text-align: center;
     }
     .hero h1 {
-      font-size: 38px;
+      font-size: 36px;
       font-weight: 700;
       margin-bottom: 16px;
     }
     .hero p {
       font-size: 18px;
       max-width: 700px;
-      margin: 0 auto 30px;
+      margin: 0 auto 25px;
       color: #e2e8f0;
     }
-    .hero-search {
-      max-width: 550px;
-      margin: 0 auto;
+    .hero-actions {
       display: flex;
-      background: #ffffff;
+      justify-content: center;
+      gap: 15px;
+    }
+    .chat-hero-btn {
+      background-color: #00A3E0;
+      color: #ffffff;
+      padding: 12px 28px;
       border-radius: 30px;
-      overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-    .hero-search input {
-      flex: 1;
-      padding: 14px 22px;
+      font-weight: 700;
+      font-size: 16px;
       border: none;
-      outline: none;
-      font-size: 15px;
-    }
-    .hero-search button {
-      background: #0072CE;
-      border: none;
-      color: white;
-      padding: 0 24px;
       cursor: pointer;
-      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.2s, transform 0.2s;
+    }
+    .chat-hero-btn:hover {
+      background-color: #0082b3;
+      transform: translateY(-2px);
     }
 
     /* Portal Cards */
     .main-container {
       max-width: 1200px;
-      margin: -40px auto 40px;
+      margin: -30px auto 60px;
       padding: 0 20px;
     }
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 24px;
     }
     .card {
@@ -142,8 +145,12 @@
       padding: 28px 20px;
       text-align: center;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card.clickable {
+      cursor: pointer;
+      border: 2px solid #0072CE;
+      background-color: #f8fbff;
     }
     .card:hover {
       transform: translateY(-5px);
@@ -162,6 +169,16 @@
     .card p {
       font-size: 14px;
       color: #666666;
+      margin-bottom: 15px;
+    }
+    .card-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #0072CE;
+      color: #ffffff;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 13px;
     }
 
     /* Notice Banner */
@@ -187,28 +204,15 @@
       text-align: center;
       padding: 24px 20px;
       font-size: 14px;
+      margin-top: 40px;
     }
 
-    /* FLOATING CHAT WIDGET STYLING (FIXED FOR VISIBILITY) */
+    /* OFFICIAL VERTEX AI CHAT MESSENGER POSITIONING */
     chat-messenger {
       position: fixed !important;
-      bottom: 30px !important;
-      right: 30px !important;
-      z-index: 9999999 !important;
-      max-width: 420px;
-      max-height: 600px;
-    }
-
-    /* Alternate Trigger Button inside 24/7 AI Assistant Card */
-    .chat-trigger-btn {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 6px 14px;
-      background-color: #0072CE;
-      color: #fff;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
+      bottom: 20px !important;
+      right: 20px !important;
+      z-index: 999999 !important;
     }
   </style>
 </head>
@@ -225,16 +229,17 @@
       <li><a href="#">Services</a></li>
       <li><a href="#">Pay a Bill</a></li>
     </ul>
-    <a href="#" class="portal-btn"><i class="fa-solid fa-user-lock"></i> MyHealthOne Portal</a>
+    <button class="portal-btn" onclick="openChat()"><i class="fa-solid fa-comments"></i> Ask AI Assistant</button>
   </header>
 
   <!-- HERO BANNER -->
   <section class="hero">
     <h1>Welcome to HCA Patient Services</h1>
     <p>Access compassionate care, manage billing, or speak with our AI Assistant 24/7.</p>
-    <div class="hero-search">
-      <input type="text" placeholder="Search conditions, doctors, or services...">
-      <button><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+    <div class="hero-actions">
+      <button class="chat-hero-btn" onclick="openChat()">
+        <i class="fa-solid fa-headset"></i> Start Chat with AI Assistant
+      </button>
     </div>
   </section>
 
@@ -256,18 +261,18 @@
         <h3>Account Lookup</h3>
         <p>Connected securely to BigQuery for authenticated account servicing.</p>
       </div>
-      <div class="card" onclick="document.querySelector('chat-messenger').shadowRoot?.querySelector('button')?.click()">
+      <div class="card clickable" onclick="openChat()">
         <div class="card-icon"><i class="fa-solid fa-robot"></i></div>
         <h3>24/7 AI Assistant</h3>
-        <p>Click here or use the chat widget in the bottom right corner.</p>
-        <span class="chat-trigger-btn"><i class="fa-solid fa-comments"></i> Start Chat</span>
+        <p>Click here to open the chat window and speak with our assistant.</p>
+        <span class="card-btn"><i class="fa-solid fa-comments"></i> Open Chat</span>
       </div>
     </div>
 
     <div class="demo-notice">
       <i class="fa-solid fa-circle-info"></i>
       <div>
-        <strong>Demonstration Environment:</strong> Click the chat launcher floating at the bottom right (or click the "24/7 AI Assistant" card) to test the conversational agent.
+        <strong>Demonstration Environment:</strong> Click any <strong>"Open Chat"</strong> button or use the blue floating chat icon at the bottom right corner to test the agent.
       </div>
     </div>
   </main>
@@ -290,6 +295,20 @@
         }),
       );
     });
+
+    // Helper function to trigger chat opening
+    function openChat() {
+      const messenger = document.querySelector('chat-messenger');
+      if (messenger) {
+        // Find internal launcher button inside shadow DOM and click it
+        const shadowBtn = messenger.shadowRoot ? messenger.shadowRoot.querySelector('button') : null;
+        if (shadowBtn) {
+          shadowBtn.click();
+        } else {
+          messenger.click();
+        }
+      }
+    }
   </script>
 
   <!-- VERTEX AI CHAT MESSENGER CUSTOM TAG -->
