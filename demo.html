@@ -189,14 +189,27 @@
       margin-top: 60px;
     }
 
-    /* MOVED CHAT MESSENGER TO BOTTOM-LEFT CORNER FOR CLEAR VISIBILITY */
+    /* FULLY EXPANDED CHAT WIDGET CONTAINER FIX */
     chat-messenger {
       position: fixed !important;
-      bottom: 30px !important;
-      left: 30px !important;
-      right: auto !important;
+      bottom: 20px !important;
+      right: 20px !important;
+      left: auto !important;
       top: auto !important;
+      width: 400px !important;
+      height: 580px !important;
+      max-width: calc(100vw - 30px) !important;
+      max-height: calc(100vh - 80px) !important;
       z-index: 999999 !important;
+      border-radius: 16px !important;
+      overflow: hidden !important;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    chat-messenger-container {
+      width: 100% !important;
+      height: 100% !important;
     }
   </style>
 </head>
@@ -247,14 +260,14 @@
       <div class="card">
         <div class="card-icon"><i class="fa-solid fa-robot"></i></div>
         <h3>24/7 AI Assistant</h3>
-        <p>Click the floating chat bubble in the bottom-left corner of the page to start.</p>
+        <p>The AI Assistant chat window is ready and floating at the bottom right corner.</p>
       </div>
     </div>
 
     <div class="demo-notice">
       <i class="fa-solid fa-circle-info"></i>
       <div>
-        <strong>Demonstration Environment:</strong> Click the chat launcher bubble at the <strong>bottom-left corner</strong> to open and interact with the AI Assistant.
+        <strong>Demonstration Environment:</strong> Interact directly with the live HCA AI Assistant window floating at the bottom-right corner.
       </div>
     </div>
   </main>
@@ -294,15 +307,6 @@
         slot="titlebar-actions"
         title-text="Start new chat"
       ></chat-reset-session-button>
-      <chat-toggle-dialog-button
-        slot="titlebar-actions"
-        title-text-expanded="Collapse"
-        title-text-collapsed="Expand"
-      ></chat-toggle-dialog-button>
-      <chat-messenger-close-button
-        slot="titlebar-actions"
-        title-text="Close"
-      ></chat-messenger-close-button>
     </chat-messenger-container>
   </chat-messenger>
 
