@@ -189,11 +189,13 @@
       margin-top: 60px;
     }
 
-    /* FIX FOR VERTEX AI CHAT MESSENGER FLOATING LAUNCHER */
+    /* MOVED CHAT MESSENGER TO BOTTOM-LEFT CORNER FOR CLEAR VISIBILITY */
     chat-messenger {
       position: fixed !important;
-      bottom: 25px !important;
-      right: 25px !important;
+      bottom: 30px !important;
+      left: 30px !important;
+      right: auto !important;
+      top: auto !important;
       z-index: 999999 !important;
     }
   </style>
@@ -245,14 +247,14 @@
       <div class="card">
         <div class="card-icon"><i class="fa-solid fa-robot"></i></div>
         <h3>24/7 AI Assistant</h3>
-        <p>Click the floating chat bubble at the bottom right corner of the page to start.</p>
+        <p>Click the floating chat bubble in the bottom-left corner of the page to start.</p>
       </div>
     </div>
 
     <div class="demo-notice">
       <i class="fa-solid fa-circle-info"></i>
       <div>
-        <strong>Demonstration Environment:</strong> Use the blue floating chat icon at the bottom right corner to test the HCA AI Assistant.
+        <strong>Demonstration Environment:</strong> Click the chat launcher bubble at the <strong>bottom-left corner</strong> to open and interact with the AI Assistant.
       </div>
     </div>
   </main>
