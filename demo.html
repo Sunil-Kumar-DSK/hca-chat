@@ -180,12 +180,14 @@
     }
     .card-btn {
       display: inline-block;
-      padding: 8px 18px;
+      padding: 10px 20px;
       background-color: #0072CE;
       color: #ffffff;
       border-radius: 20px;
       font-weight: 600;
-      font-size: 13px;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
     }
 
     /* Notice Banner */
@@ -214,14 +216,14 @@
       margin-top: 60px;
     }
 
-    /* OFFICIAL VERTEX AI WIDGET CUSTOM CSS VARIABLES */
+    /* FLOATING CHAT WIDGET STYLING */
     chat-messenger {
       position: fixed !important;
       bottom: 24px !important;
       right: 24px !important;
       z-index: 999999 !important;
-      --chat-messenger-width: 410px;
-      --chat-messenger-height: 580px;
+      --chat-messenger-width: 420px;
+      --chat-messenger-height: 590px;
     }
   </style>
 </head>
@@ -272,19 +274,22 @@
         <h3>Account Lookup</h3>
         <p>Connected securely to BigQuery for authenticated account servicing.</p>
       </div>
-      <!-- CLICKABLE CARD TO OPEN CHAT -->
+
+      <!-- CLICKABLE 24/7 AI ASSISTANT CARD -->
       <div class="card interactive-card" onclick="openAgentChat()">
         <div class="card-icon"><i class="fa-solid fa-robot"></i></div>
         <h3>24/7 AI Assistant</h3>
         <p>Click here or use the floating launcher at the bottom right to open chat.</p>
-        <span class="card-btn"><i class="fa-solid fa-comments"></i> Open Agent Chat</span>
+        <button class="card-btn" onclick="openAgentChat(); event.stopPropagation();">
+          <i class="fa-solid fa-comments"></i> Open Agent Chat
+        </button>
       </div>
     </div>
 
     <div class="demo-notice">
       <i class="fa-solid fa-circle-info"></i>
       <div>
-        <strong>Demonstration Environment:</strong> Click the <strong>"24/7 AI Assistant"</strong> card above or the blue floating button at the bottom right corner to open the chat agent.
+        <strong>Demonstration Environment:</strong> Click the <strong>"Open Agent Chat"</strong> button above or the blue launcher icon in the bottom-right corner to open the assistant.
       </div>
     </div>
   </main>
@@ -294,7 +299,7 @@
     <p>&copy; 2026 HCA Healthcare Inc. All rights reserved. | Demo Portal powered by Vertex AI Agent Builder</p>
   </footer>
 
-  <!-- JAVASCRIPT TO REGISTER & CONTROL WIDGET -->
+  <!-- VERTEX AI REGISTRATION & RECURSIVE SHADOW DOM TRIGGER SCRIPT -->
   <script>
     window.addEventListener("chat-messenger-loaded", () => {
       chatSdk.registerContext(
@@ -308,24 +313,39 @@
       );
     });
 
-    // Reliable Function to Open Chat Agent on Click
+    // Deep Shadow DOM Traverser function to reliably open the chat widget
     function openAgentChat() {
       const messenger = document.querySelector('chat-messenger');
       if (!messenger) return;
 
-      if (messenger.shadowRoot) {
-        const shadowBtn = messenger.shadowRoot.querySelector('button') || 
-                          messenger.shadowRoot.querySelector('[role="button"]');
-        if (shadowBtn) {
-          shadowBtn.click();
-          return;
-        }
+      // Set property and attribute state
+      messenger.setAttribute('opened', 'true');
+      messenger.opened = true;
+
+      // Traverse all nested shadow DOM trees to click the internal launcher button
+      function triggerShadowLaunchers(node) {
+        if (!node) return;
+
+        // Try clicking internal buttons or launchers
+        const clickables = node.querySelectorAll('button, [role="button"], .chat-launcher, .launcher, chat-toggle-dialog-button, chat-messenger-chat-bubble');
+        clickables.forEach(el => {
+          try { el.click(); } catch(err) {}
+        });
+
+        // Traverse child shadowRoots
+        const allElements = node.querySelectorAll('*');
+        allElements.forEach(el => {
+          if (el.shadowRoot) {
+            triggerShadowLaunchers(el.shadowRoot);
+          }
+        });
       }
-      messenger.click();
+
+      triggerShadowLaunchers(messenger.shadowRoot || messenger);
     }
   </script>
 
-  <!-- VERTEX AI CHAT MESSENGER WIDGET -->
+  <!-- VERTEX AI CHAT MESSENGER CUSTOM TAG WITH TITLEBAR ACTION BUTTONS -->
   <chat-messenger
     url-allowlist="*"
     color-scheme="dark"
@@ -336,17 +356,17 @@
       enable-file-upload
       enable-audio-input
     >
-      <!-- START NEW CHAT BUTTON -->
+      <!-- RESTART / START NEW CHAT BUTTON -->
       <chat-reset-session-button
         slot="titlebar-actions"
         title-text="Start new chat"
       ></chat-reset-session-button>
 
-      <!-- EXPAND / COLLAPSE BUTTON -->
+      <!-- EXPAND / FULLSCREEN TOGGLE BUTTON -->
       <chat-toggle-dialog-button
         slot="titlebar-actions"
-        title-text-expanded="Restore standard size"
-        title-text-collapsed="Expand window"
+        title-text-expanded="Collapse"
+        title-text-collapsed="Expand"
       ></chat-toggle-dialog-button>
 
       <!-- MINIMIZE / CLOSE BUTTON -->
