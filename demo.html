@@ -189,27 +189,25 @@
       margin-top: 60px;
     }
 
-    /* FULLY EXPANDED CHAT WIDGET CONTAINER FIX */
+    /* FLOATING CHAT WIDGET POSITIONING & RESIZING SUPPORTS */
     chat-messenger {
       position: fixed !important;
       bottom: 20px !important;
       right: 20px !important;
-      left: auto !important;
-      top: auto !important;
-      width: 400px !important;
-      height: 580px !important;
-      max-width: calc(100vw - 30px) !important;
-      max-height: calc(100vh - 80px) !important;
       z-index: 999999 !important;
-      border-radius: 16px !important;
-      overflow: hidden !important;
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      --chat-messenger-width: 410px;
+      --chat-messenger-height: 590px;
     }
 
+    /* Responsive Chat Container */
     chat-messenger-container {
-      width: 100% !important;
-      height: 100% !important;
+      width: 410px !important;
+      height: 590px !important;
+      max-width: calc(100vw - 30px) !important;
+      max-height: calc(100vh - 60px) !important;
+      border-radius: 16px !important;
+      overflow: hidden !important;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35) !important;
     }
   </style>
 </head>
@@ -260,14 +258,14 @@
       <div class="card">
         <div class="card-icon"><i class="fa-solid fa-robot"></i></div>
         <h3>24/7 AI Assistant</h3>
-        <p>The AI Assistant chat window is ready and floating at the bottom right corner.</p>
+        <p>Use the titlebar controls to expand or minimize the chat window at any time.</p>
       </div>
     </div>
 
     <div class="demo-notice">
       <i class="fa-solid fa-circle-info"></i>
       <div>
-        <strong>Demonstration Environment:</strong> Interact directly with the live HCA AI Assistant window floating at the bottom-right corner.
+        <strong>Demonstration Environment:</strong> Use the buttons on top-right of the chat window to <strong>Expand</strong>, <strong>Reset</strong>, or <strong>Minimize</strong> the assistant.
       </div>
     </div>
   </main>
@@ -292,7 +290,7 @@
     });
   </script>
 
-  <!-- VERTEX AI CHAT MESSENGER CUSTOM TAG -->
+  <!-- VERTEX AI CHAT MESSENGER CUSTOM TAG WITH TITLEBAR ACTIONS -->
   <chat-messenger
     url-allowlist="*"
     color-scheme="dark"
@@ -303,10 +301,24 @@
       enable-file-upload
       enable-audio-input
     >
+      <!-- START NEW CHAT BUTTON -->
       <chat-reset-session-button
         slot="titlebar-actions"
         title-text="Start new chat"
       ></chat-reset-session-button>
+
+      <!-- EXPAND / FULLSCREEN BUTTON -->
+      <chat-toggle-dialog-button
+        slot="titlebar-actions"
+        title-text-expanded="Restore standard size"
+        title-text-collapsed="Expand window"
+      ></chat-toggle-dialog-button>
+
+      <!-- MINIMIZE / CLOSE BUTTON -->
+      <chat-messenger-close-button
+        slot="titlebar-actions"
+        title-text="Minimize chat"
+      ></chat-messenger-close-button>
     </chat-messenger-container>
   </chat-messenger>
 
