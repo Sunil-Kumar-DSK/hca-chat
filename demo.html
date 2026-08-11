@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-default.css">
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-layout.css">
   
-  <!-- Font Awesome Icons for HCA Landing Page UI -->
+  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
@@ -25,11 +25,12 @@
       background-color: #f4f7f9;
       color: #333333;
       line-height: 1.6;
+      padding-bottom: 80px; /* Space for footer and widget */
     }
 
     /* Header & Navigation */
     .header {
-      background-color: #002D62; /* HCA Primary Navy */
+      background-color: #002D62; /* HCA Navy */
       color: #ffffff;
       padding: 16px 5%;
       display: flex;
@@ -53,7 +54,7 @@
       text-transform: uppercase;
     }
     .brand-logo span {
-      color: #00A3E0; /* Accent Light Blue */
+      color: #00A3E0;
       font-weight: 300;
     }
     .nav-links {
@@ -66,7 +67,6 @@
       text-decoration: none;
       font-weight: 500;
       font-size: 15px;
-      transition: color 0.2s;
     }
     .nav-links a:hover {
       color: #00A3E0;
@@ -79,10 +79,6 @@
       text-decoration: none;
       font-weight: 600;
       font-size: 14px;
-      transition: background-color 0.2s;
-    }
-    .portal-btn:hover {
-      background-color: #00569e;
     }
 
     /* Hero Banner */
@@ -129,15 +125,15 @@
       font-weight: 600;
     }
 
-    /* Portal Quick Access Cards */
+    /* Portal Cards */
     .main-container {
       max-width: 1200px;
-      margin: -40px auto 60px;
+      margin: -40px auto 40px;
       padding: 0 20px;
     }
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
       gap: 24px;
     }
     .card {
@@ -146,6 +142,7 @@
       padding: 28px 20px;
       text-align: center;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
     }
     .card:hover {
@@ -188,16 +185,30 @@
       background-color: #0a192f;
       color: #8892b0;
       text-align: center;
-      padding: 30px 20px;
+      padding: 24px 20px;
       font-size: 14px;
     }
 
-    /* Floating Chat Messenger Styling (Bottom-Right Corner) */
+    /* FLOATING CHAT WIDGET STYLING (FIXED FOR VISIBILITY) */
     chat-messenger {
       position: fixed !important;
-      bottom: 24px !important;
-      right: 24px !important;
-      z-index: 999999 !important;
+      bottom: 30px !important;
+      right: 30px !important;
+      z-index: 9999999 !important;
+      max-width: 420px;
+      max-height: 600px;
+    }
+
+    /* Alternate Trigger Button inside 24/7 AI Assistant Card */
+    .chat-trigger-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 6px 14px;
+      background-color: #0072CE;
+      color: #fff;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
     }
   </style>
 </head>
@@ -245,17 +256,18 @@
         <h3>Account Lookup</h3>
         <p>Connected securely to BigQuery for authenticated account servicing.</p>
       </div>
-      <div class="card">
+      <div class="card" onclick="document.querySelector('chat-messenger').shadowRoot?.querySelector('button')?.click()">
         <div class="card-icon"><i class="fa-solid fa-robot"></i></div>
         <h3>24/7 AI Assistant</h3>
-        <p>Click the chat launcher in the bottom right corner to start a session.</p>
+        <p>Click here or use the chat widget in the bottom right corner.</p>
+        <span class="chat-trigger-btn"><i class="fa-solid fa-comments"></i> Start Chat</span>
       </div>
     </div>
 
     <div class="demo-notice">
       <i class="fa-solid fa-circle-info"></i>
       <div>
-        <strong>Demonstration Environment:</strong> Use the interactive HCA AI Assistant floating at the bottom right corner to test conversational agent capabilities.
+        <strong>Demonstration Environment:</strong> Click the chat launcher floating at the bottom right (or click the "24/7 AI Assistant" card) to test the conversational agent.
       </div>
     </div>
   </main>
