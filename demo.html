@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* Reset & Base Layout */
+    /* Reset & Base Styles */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -30,7 +30,7 @@
 
     /* Header & Navigation */
     .header {
-      background-color: #002D62; /* Official HCA Navy */
+      background-color: #002D62; /* HCA Navy */
       color: #ffffff;
       padding: 16px 5%;
       display: flex;
@@ -215,6 +215,35 @@
       font-size: 14px;
       margin-top: 60px;
     }
+
+    /* FIX: FIXED VIEWPORT OVERLAY CONTAINER FOR CHAT WIDGET */
+    #chat-widget-container {
+      position: fixed !important;
+      bottom: 20px !important;
+      right: 20px !important;
+      width: 400px !important;
+      height: 580px !important;
+      max-width: calc(100vw - 30px) !important;
+      max-height: calc(100vh - 40px) !important;
+      z-index: 999999 !important;
+      pointer-events: none; /* Passes clicks through empty area when closed */
+    }
+
+    #chat-widget-container chat-messenger {
+      pointer-events: auto;
+      width: 100% !important;
+      height: 100% !important;
+      --chat-messenger-width: 100%;
+      --chat-messenger-height: 100%;
+    }
+
+    chat-messenger-container {
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 16px !important;
+      overflow: hidden !important;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35) !important;
+    }
   </style>
 </head>
 <body>
@@ -265,7 +294,7 @@
         <p>Connected securely to BigQuery for authenticated account servicing.</p>
       </div>
 
-      <!-- CLICKABLE 24/7 AI ASSISTANT CARD -->
+      <!-- CLICKABLE CARD -->
       <div class="card interactive-card" onclick="openAgentChat()">
         <div class="card-icon"><i class="fa-solid fa-robot"></i></div>
         <h3>24/7 AI Assistant</h3>
@@ -279,7 +308,7 @@
     <div class="demo-notice">
       <i class="fa-solid fa-circle-info"></i>
       <div>
-        <strong>Demonstration Environment:</strong> Click the <strong>"Open Agent Chat"</strong> button above or the floating blue icon at the bottom right corner to open the assistant.
+        <strong>Demonstration Environment:</strong> Use the interactive HCA AI Assistant floating at the bottom right corner of your screen.
       </div>
     </div>
   </main>
@@ -289,7 +318,41 @@
     <p>&copy; 2026 HCA Healthcare Inc. All rights reserved. | Demo Portal powered by Vertex AI Agent Builder</p>
   </footer>
 
-  <!-- VERTEX AI CONTEXT REGISTRATION & RELIABLE OPEN SCRIPT -->
+  <!-- FLOATING CHAT WIDGET CONTAINER -->
+  <div id="chat-widget-container">
+    <chat-messenger
+      url-allowlist="*"
+      color-scheme="dark"
+    >
+      <chat-messenger-container
+        chat-title="HCA AI Assistant"
+        chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
+        enable-file-upload
+        enable-audio-input
+      >
+        <!-- RESTART CHAT BUTTON -->
+        <chat-reset-session-button
+          slot="titlebar-actions"
+          title-text="Start new chat"
+        ></chat-reset-session-button>
+
+        <!-- EXPAND / FULLSCREEN TOGGLE BUTTON -->
+        <chat-toggle-dialog-button
+          slot="titlebar-actions"
+          title-text-expanded="Collapse"
+          title-text-collapsed="Expand"
+        ></chat-toggle-dialog-button>
+
+        <!-- MINIMIZE / CLOSE BUTTON -->
+        <chat-messenger-close-button
+          slot="titlebar-actions"
+          title-text="Minimize chat"
+        ></chat-messenger-close-button>
+      </chat-messenger-container>
+    </chat-messenger>
+  </div>
+
+  <!-- SCRIPT TO REGISTER AND OPEN CHAT -->
   <script>
     window.addEventListener("chat-messenger-loaded", () => {
       chatSdk.registerContext(
@@ -301,62 +364,28 @@
           }
         }),
       );
+      
+      // Auto-open chat after widget loads
+      setTimeout(openAgentChat, 800);
     });
 
-    // Programmatic Open Function targeting Vertex AI chat-messenger
     function openAgentChat() {
       const messenger = document.querySelector('chat-messenger');
       if (!messenger) return;
 
-      // Method 1: Native Web Component API
-      if (typeof messenger.openDialog === 'function') {
-        messenger.openDialog();
-      }
       messenger.setAttribute('opened', 'true');
       messenger.opened = true;
 
-      // Method 2: Click internal launcher inside Shadow DOM
-      const shadow = messenger.shadowRoot;
-      if (shadow) {
-        const btn = shadow.querySelector('button') || 
-                    shadow.querySelector('.chat-launcher') || 
-                    shadow.querySelector('[role="button"]');
+      if (typeof messenger.openDialog === 'function') messenger.openDialog();
+      if (typeof messenger.open === 'function') messenger.open();
+
+      if (messenger.shadowRoot) {
+        const btn = messenger.shadowRoot.querySelector('button') || 
+                    messenger.shadowRoot.querySelector('[role="button"]');
         if (btn) btn.click();
       }
     }
   </script>
-
-  <!-- VERTEX AI CHAT MESSENGER CUSTOM TAG -->
-  <chat-messenger
-    url-allowlist="*"
-    color-scheme="dark"
-  >
-    <chat-messenger-container
-      chat-title="HCA AI Assistant"
-      chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
-      enable-file-upload
-      enable-audio-input
-    >
-      <!-- RESTART CHAT BUTTON -->
-      <chat-reset-session-button
-        slot="titlebar-actions"
-        title-text="Start new chat"
-      ></chat-reset-session-button>
-
-      <!-- EXPAND TOGGLE BUTTON -->
-      <chat-toggle-dialog-button
-        slot="titlebar-actions"
-        title-text-expanded="Collapse"
-        title-text-collapsed="Expand"
-      ></chat-toggle-dialog-button>
-
-      <!-- MINIMIZE / CLOSE BUTTON -->
-      <chat-messenger-close-button
-        slot="titlebar-actions"
-        title-text="Minimize chat"
-      ></chat-messenger-close-button>
-    </chat-messenger-container>
-  </chat-messenger>
 
 </body>
 </html>
