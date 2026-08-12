@@ -287,7 +287,7 @@
       max-width: 600px;
     }
 
-    /* CUSTOM FLOATING LAUNCHER PILL (Matching Mockup Screenshot) */
+    /* CUSTOM FLOATING LAUNCHER PILL */
     .custom-chat-launcher {
       position: fixed;
       bottom: 24px;
@@ -343,7 +343,7 @@
       max-width: calc(100vw - 30px) !important;
       max-height: calc(100vh - 40px) !important;
       z-index: 999999 !important;
-      display: none; /* Controlled by open/close */
+      display: none;
     }
     #chat-widget-wrapper.active {
       display: block;
@@ -511,7 +511,7 @@
     </div>
   </section>
 
-  <!-- CUSTOM FLOATING LAUNCHER PILL (MOCKUP MATCHING) -->
+  <!-- CUSTOM FLOATING LAUNCHER PILL -->
   <div class="custom-chat-launcher" id="launcher-pill" onclick="toggleWidget()">
     <div class="launcher-icon-circle">
       <i class="fa-regular fa-comment-dots"></i>
@@ -522,17 +522,16 @@
     </div>
   </div>
 
-  <!-- FLOATING VERTEX AI WIDGET -->
+  <!-- FLOATING VERTEX AI WIDGET (LIGHT THEME) -->
   <div id="chat-widget-wrapper">
     <chat-messenger
       url-allowlist="*"
-      color-scheme="dark"
+      color-scheme="light"
     >
       <chat-messenger-container
-        chat-title="HCA AI Assistant"
+        chat-title="HCA Chat Assistant"
         chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
         enable-file-upload
-        enable-audio-input
       >
         <chat-reset-session-button
           slot="titlebar-actions"
@@ -547,7 +546,7 @@
 
         <chat-messenger-close-button
           slot="titlebar-actions"
-          title-text="Minimize chat"
+          title-text="Close"
           onclick="toggleWidget()"
         ></chat-messenger-close-button>
       </chat-messenger-container>
