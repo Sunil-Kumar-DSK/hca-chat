@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HCA Healthcare | Patient Care & Support Portal</title>
+  <title>MyHealthONE® | Patient Portal</title>
   
   <!-- VERTEX AI HEAD SECTION SCRIPTS -->
   <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* Reset & Base Styles */
+    /* Reset & Fonts */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -22,220 +22,334 @@
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #f4f7f9;
-      color: #333333;
-      line-height: 1.6;
-      min-height: 100vh;
+      background-color: #f0f4f8;
+      color: #1a202c;
+      line-height: 1.5;
+      overflow-x: hidden;
     }
 
-    /* Header & Navigation */
-    .header {
-      background-color: #002D62; /* HCA Navy */
-      color: #ffffff;
-      padding: 16px 5%;
+    /* Top Navigation Header */
+    .mh1-header {
+      background-color: #ffffff;
+      height: 72px;
+      padding: 0 6%;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+      border-bottom: 1px solid #e2e8f0;
       position: sticky;
       top: 0;
       z-index: 100;
     }
-    .brand-container {
+    .mh1-logo {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0b3c5d;
+      letter-spacing: -0.5px;
       display: flex;
       align-items: center;
+      text-decoration: none;
+    }
+    .mh1-logo .one {
+      color: #e65100;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+    }
+    .mh1-logo .one::before {
+      content: "♦";
+      font-size: 14px;
+      margin: 0 1px;
+      color: #e65100;
+    }
+    .header-btns {
+      display: flex;
       gap: 12px;
     }
-    .brand-logo {
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: 1px;
+    .btn-create-account {
+      background-color: #2b78b5;
       color: #ffffff;
-      text-transform: uppercase;
-    }
-    .brand-logo span {
-      color: #00A3E0;
-      font-weight: 300;
-    }
-    .nav-links {
-      display: flex;
-      gap: 24px;
-      list-style: none;
-    }
-    .nav-links a {
-      color: #e2e8f0;
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 15px;
-    }
-    .nav-links a:hover {
-      color: #00A3E0;
-    }
-    .portal-btn {
-      background-color: #0072CE;
-      color: #ffffff;
-      padding: 10px 20px;
-      border-radius: 4px;
-      text-decoration: none;
+      padding: 10px 22px;
+      border-radius: 6px;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 15px;
       border: none;
       cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.2s;
+    }
+    .btn-create-account:hover {
+      background-color: #1f5d8e;
+    }
+    .btn-login {
+      background-color: transparent;
+      color: #2b78b5;
+      border: 2px solid #2b78b5;
+      padding: 8px 22px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .btn-login:hover {
+      background-color: #2b78b5;
+      color: #ffffff;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      background: linear-gradient(135deg, #0b4f8a 0%, #086bb5 50%, #02386e 100%);
+      padding: 40px 6% 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-title-box {
+      text-align: center;
+      color: #ffffff;
+      max-width: 800px;
+      margin: 0 auto 36px;
+    }
+    .hero-title-box h1 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+    .hero-title-box h1 span {
+      color: #ff8a65;
+    }
+    .hero-title-box p {
+      font-size: 20px;
+      color: #e2e8f0;
+      font-weight: 400;
+    }
+
+    /* Content Layout Grid */
+    .hero-grid {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    /* White Features Card */
+    .features-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    .features-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px 20px;
+      margin-bottom: 30px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .feature-icon {
+      width: 38px;
+      height: 38px;
+      border: 2px solid #2b78b5;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #2b78b5;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .feature-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a202c;
+      line-height: 1.35;
+    }
+    .card-action-box {
+      text-align: center;
+      padding-top: 10px;
+    }
+    .card-action-box .btn-create-account {
+      padding: 12px 32px;
+      font-size: 16px;
+      display: inline-block;
+      margin-bottom: 14px;
+    }
+    .phone-support {
+      font-size: 14px;
+      color: #4a5568;
+    }
+    .phone-support a {
+      color: #2b78b5;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    /* Phone Graphic Representation */
+    .phone-wrapper {
+      display: flex;
+      justify-content: center;
+    }
+    .phone-frame {
+      width: 280px;
+      background: #ffffff;
+      border: 10px solid #111111;
+      border-radius: 36px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+    .phone-screen {
+      padding: 16px;
+      background: #f8fafc;
+      font-size: 13px;
+    }
+    .phone-header {
+      font-size: 11px;
+      font-weight: 700;
+      color: #718096;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .phone-welcome {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0b3c5d;
+      margin-bottom: 10px;
+    }
+    .phone-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #4a5568;
+      margin-bottom: 8px;
+    }
+    .phone-list-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .phone-item-left {
       display: flex;
       align-items: center;
       gap: 8px;
-      transition: background-color 0.2s;
     }
-    .portal-btn:hover {
-      background-color: #00569e;
-    }
-
-    /* Hero Banner */
-    .hero {
-      background: linear-gradient(135deg, rgba(0, 45, 98, 0.88), rgba(0, 114, 206, 0.82)), 
-                  url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
-      color: #ffffff;
-      padding: 70px 5%;
-      text-align: center;
-    }
-    .hero h1 {
-      font-size: 38px;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-    .hero p {
-      font-size: 18px;
-      max-width: 700px;
-      margin: 0 auto 25px;
-      color: #e2e8f0;
-    }
-    .hero-actions {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-      margin-bottom: 10px;
-    }
-    .hero-chat-btn {
-      background-color: #00A3E0;
-      color: #ffffff;
-      padding: 12px 26px;
-      border-radius: 30px;
-      font-weight: 700;
-      font-size: 15px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      transition: background-color 0.2s, transform 0.2s;
-    }
-    .hero-chat-btn:hover {
-      background-color: #0082b3;
-      transform: translateY(-2px);
-    }
-
-    /* Portal Cards */
-    .main-container {
-      max-width: 1200px;
-      margin: -30px auto 40px;
-      padding: 0 20px;
-    }
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 24px;
-    }
-    .card {
-      background: #ffffff;
-      border-radius: 8px;
-      padding: 28px 20px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .card.interactive-card {
-      border: 2px solid #0072CE;
-      background-color: #f8fbff;
-      cursor: pointer;
-    }
-    .card.interactive-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 10px 24px rgba(0, 114, 206, 0.25);
-    }
-    .card-icon {
-      font-size: 32px;
-      color: #0072CE;
-      margin-bottom: 16px;
-    }
-    .card h3 {
-      font-size: 18px;
-      color: #002D62;
-      margin-bottom: 10px;
-    }
-    .card p {
-      font-size: 14px;
-      color: #666666;
-      margin-bottom: 16px;
-    }
-    .card-btn {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #0072CE;
-      color: #ffffff;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 14px;
-      border: none;
-      cursor: pointer;
-    }
-
-    /* Notice Banner */
-    .demo-notice {
-      background-color: #eaf4ff;
-      border-left: 4px solid #0072CE;
-      padding: 16px 24px;
-      margin-top: 40px;
+    .phone-item-icon {
+      width: 22px;
+      height: 22px;
+      border: 1px solid #2b78b5;
       border-radius: 4px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      justify-content: center;
+      color: #2b78b5;
+      font-size: 11px;
     }
-    .demo-notice i {
-      color: #0072CE;
+    .phone-item-title {
+      font-weight: 700;
+      color: #2d3748;
+      font-size: 11px;
+    }
+    .phone-item-sub {
+      font-size: 9px;
+      color: #a0aec0;
+    }
+
+    /* Secondary Lower Section */
+    .secondary-section {
+      background-color: #eaf1f7;
+      padding: 50px 6%;
+    }
+    .secondary-container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    .secondary-section h2 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0b3c5d;
+      margin-bottom: 8px;
+    }
+    .secondary-section p {
+      font-size: 16px;
+      color: #4a5568;
+      max-width: 600px;
+    }
+
+    /* CUSTOM FLOATING LAUNCHER PILL (Matching Mockup Screenshot) */
+    .custom-chat-launcher {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 30px;
+      padding: 8px 18px 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      cursor: pointer;
+      z-index: 999998;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .custom-chat-launcher:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+    }
+    .launcher-icon-circle {
+      width: 42px;
+      height: 42px;
+      background-color: #2b78b5;
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 20px;
     }
-
-    /* Footer */
-    .footer {
-      background-color: #0a192f;
-      color: #8892b0;
-      text-align: center;
-      padding: 30px 20px;
+    .launcher-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .launcher-title {
       font-size: 14px;
-      margin-top: 60px;
+      font-weight: 700;
+      color: #1a202c;
+    }
+    .launcher-subtitle {
+      font-size: 12px;
+      color: #718096;
     }
 
-    /* COMPACT WIDGET HEIGHT (MATCHING RED HIGHLIGHT AREA) */
-    #chat-widget-container {
+    /* VERTEX AI EMBEDDED WIDGET CONTAINER */
+    #chat-widget-wrapper {
       position: fixed !important;
       bottom: 20px !important;
       right: 20px !important;
-      width: 380px !important;
-      height: 280px !important; /* Compact Red Highlighted Height */
-      max-width: calc(100vw - 30px) !important;
-      z-index: 999999 !important;
-      pointer-events: none;
-      transition: height 0.3s ease;
-    }
-
-    /* Expanded state class when clicking expand button */
-    #chat-widget-container.expanded {
+      width: 390px !important;
       height: 580px !important;
+      max-width: calc(100vw - 30px) !important;
+      max-height: calc(100vh - 40px) !important;
+      z-index: 999999 !important;
+      display: none; /* Controlled by open/close */
+    }
+    #chat-widget-wrapper.active {
+      display: block;
     }
 
-    #chat-widget-container chat-messenger {
-      pointer-events: auto;
+    chat-messenger {
       width: 100% !important;
       height: 100% !important;
       --chat-messenger-width: 100%;
@@ -247,84 +361,169 @@
       height: 100% !important;
       border-radius: 16px !important;
       overflow: hidden !important;
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4) !important;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+      .phone-wrapper {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- HCA BRANDED HEADER -->
-  <header class="header">
-    <div class="brand-container">
-      <div class="brand-logo">HCA <span>Healthcare</span></div>
+  <!-- MYHEALTHONE TOP HEADER -->
+  <header class="mh1-header">
+    <a href="#" class="mh1-logo">
+      MyHealth<span class="one">ONE</span>
+    </a>
+    <div class="header-btns">
+      <button class="btn-create-account">Create an account</button>
+      <button class="btn-login">Log in</button>
     </div>
-    <ul class="nav-links">
-      <li><a href="#">Find Care</a></li>
-      <li><a href="#">Locations</a></li>
-      <li><a href="#">Services</a></li>
-      <li><a href="#">Pay a Bill</a></li>
-    </ul>
-    <button class="portal-btn" onclick="openAgentChat()">
-      <i class="fa-solid fa-comments"></i> Ask AI Assistant
-    </button>
   </header>
 
-  <!-- HERO BANNER -->
-  <section class="hero">
-    <h1>Welcome to HCA Patient Services</h1>
-    <p>Access compassionate care, manage billing, or speak with our AI Assistant 24/7.</p>
-    <div class="hero-actions">
-      <button class="hero-chat-btn" onclick="openAgentChat()">
-        <i class="fa-solid fa-headset"></i> Start Chat with AI Assistant
-      </button>
+  <!-- HERO SECTION -->
+  <section class="hero-section">
+    <div class="hero-title-box">
+      <h1>MyHealth<span>ONE</span>®</h1>
+      <p>With the MyHealthONE patient portal, you can make better decisions for your health.</p>
+    </div>
+
+    <div class="hero-grid">
+      <!-- LEFT FEATURES CARD -->
+      <div class="features-card">
+        <div class="features-list">
+          <div class="feature-item">
+            <div class="feature-icon"><i class="fa-regular fa-folder-open"></i></div>
+            <div class="feature-text">View health records, lab results, imaging reports and more</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><i class="fa-solid fa-dollar-sign"></i></div>
+            <div class="feature-text">Access and pay healthcare bills</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><i class="fa-regular fa-calendar-check"></i></div>
+            <div class="feature-text">Register for visits in advance</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><i class="fa-solid fa-file-signature"></i></div>
+            <div class="feature-text">Share your health records with a physician or proxy</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><i class="fa-solid fa-user-doctor"></i></div>
+            <div class="feature-text">Find a doctor and schedule appointments</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><i class="fa-regular fa-heart"></i></div>
+            <div class="feature-text">Register for a class or event</div>
+          </div>
+        </div>
+
+        <div class="card-action-box">
+          <button class="btn-create-account">Create an account</button>
+          <p class="phone-support">Creating an account for someone else? Call <a href="tel:8554226625">855-422-6625</a></p>
+        </div>
+      </div>
+
+      <!-- RIGHT PHONE FRAME MOCKUP -->
+      <div class="phone-wrapper">
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="phone-header">
+              <span>9:41</span>
+              <span>MyHealthONE</span>
+            </div>
+            <div class="phone-welcome">
+              Good morning, Christina
+            </div>
+            <div class="phone-section-title">Manage Your Care</div>
+
+            <div class="phone-list-item">
+              <div class="phone-item-left">
+                <div class="phone-item-icon"><i class="fa-solid fa-plus"></i></div>
+                <div>
+                  <div class="phone-item-title">Find a Doctor</div>
+                  <div class="phone-item-sub">Schedule or visit today</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="font-size: 10px; color: #a0aec0;"></i>
+            </div>
+
+            <div class="phone-list-item">
+              <div class="phone-item-left">
+                <div class="phone-item-icon"><i class="fa-solid fa-dollar-sign"></i></div>
+                <div>
+                  <div class="phone-item-title">Pay a Bill</div>
+                  <div class="phone-item-sub">View and pay your bills</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="font-size: 10px; color: #a0aec0;"></i>
+            </div>
+
+            <div class="phone-list-item">
+              <div class="phone-item-left">
+                <div class="phone-item-icon"><i class="fa-regular fa-calendar-days"></i></div>
+                <div>
+                  <div class="phone-item-title">Register for a Visit</div>
+                  <div class="phone-item-sub">Complete registration forms</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="font-size: 10px; color: #a0aec0;"></i>
+            </div>
+
+            <div class="phone-list-item">
+              <div class="phone-item-left">
+                <div class="phone-item-icon"><i class="fa-solid fa-plus-square"></i></div>
+                <div>
+                  <div class="phone-item-title">Urgent Care Web Check-In®</div>
+                  <div class="phone-item-sub">Check-in and complete forms</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="font-size: 10px; color: #a0aec0;"></i>
+            </div>
+
+            <div class="phone-list-item">
+              <div class="phone-item-left">
+                <div class="phone-item-icon"><i class="fa-regular fa-id-card"></i></div>
+                <div>
+                  <div class="phone-item-title">Share Health Records</div>
+                  <div class="phone-item-sub">Send and download records</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="font-size: 10px; color: #a0aec0;"></i>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- QUICK CARDS -->
-  <main class="main-container">
-    <div class="cards-grid">
-      <div class="card">
-        <div class="card-icon"><i class="fa-solid fa-hospital-user"></i></div>
-        <h3>Patient Billing FAQ</h3>
-        <p>Inquire about insurance, payment plans, and general billing support.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon"><i class="fa-solid fa-calculator"></i></div>
-        <h3>Payment Estimator</h3>
-        <p>Calculate estimated out-of-pocket costs and payment plan setup.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon"><i class="fa-solid fa-database"></i></div>
-        <h3>Account Lookup</h3>
-        <p>Connected securely to BigQuery for authenticated account servicing.</p>
-      </div>
-
-      <!-- CLICKABLE CARD -->
-      <div class="card interactive-card" onclick="openAgentChat()">
-        <div class="card-icon"><i class="fa-solid fa-robot"></i></div>
-        <h3>24/7 AI Assistant</h3>
-        <p>Click here or use the floating launcher at the bottom right to open chat.</p>
-        <button class="card-btn" onclick="openAgentChat(); event.stopPropagation();">
-          <i class="fa-solid fa-comments"></i> Open Agent Chat
-        </button>
-      </div>
+  <!-- SECONDARY SECTION -->
+  <section class="secondary-section">
+    <div class="secondary-container">
+      <h2>Your health, all in one place</h2>
+      <p>Access care information, manage visits and handle your healthcare bills through one secure patient experience.</p>
     </div>
+  </section>
 
-    <div class="demo-notice">
-      <i class="fa-solid fa-circle-info"></i>
-      <div>
-        <strong>Demonstration Environment:</strong> Use the compact HCA AI Assistant window floating at the bottom right corner of your screen.
-      </div>
+  <!-- CUSTOM FLOATING LAUNCHER PILL (MOCKUP MATCHING) -->
+  <div class="custom-chat-launcher" id="launcher-pill" onclick="toggleWidget()">
+    <div class="launcher-icon-circle">
+      <i class="fa-regular fa-comment-dots"></i>
     </div>
-  </main>
+    <div class="launcher-text">
+      <span class="launcher-title">Chat with HCA Assistant</span>
+      <span class="launcher-subtitle">Billing help available</span>
+    </div>
+  </div>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <p>&copy; 2026 HCA Healthcare Inc. All rights reserved. | Demo Portal powered by Vertex AI Agent Builder</p>
-  </footer>
-
-  <!-- COMPACT CHAT WIDGET CONTAINER -->
-  <div id="chat-widget-container">
+  <!-- FLOATING VERTEX AI WIDGET -->
+  <div id="chat-widget-wrapper">
     <chat-messenger
       url-allowlist="*"
       color-scheme="dark"
@@ -335,30 +534,27 @@
         enable-file-upload
         enable-audio-input
       >
-        <!-- RESTART CHAT BUTTON -->
         <chat-reset-session-button
           slot="titlebar-actions"
           title-text="Start new chat"
         ></chat-reset-session-button>
 
-        <!-- EXPAND / COLLAPSE TOGGLE BUTTON -->
         <chat-toggle-dialog-button
           slot="titlebar-actions"
           title-text-expanded="Collapse"
           title-text-collapsed="Expand"
-          onclick="toggleExpandWidget()"
         ></chat-toggle-dialog-button>
 
-        <!-- MINIMIZE BUTTON -->
         <chat-messenger-close-button
           slot="titlebar-actions"
           title-text="Minimize chat"
+          onclick="toggleWidget()"
         ></chat-messenger-close-button>
       </chat-messenger-container>
     </chat-messenger>
   </div>
 
-  <!-- SCRIPT TO REGISTER AND CONTROL COMPACT WIDGET -->
+  <!-- VERTEX AI SDK SCRIPTS -->
   <script>
     window.addEventListener("chat-messenger-loaded", () => {
       chatSdk.registerContext(
@@ -370,32 +566,30 @@
           }
         }),
       );
-      
-      // Auto-open chat after widget loads
-      setTimeout(openAgentChat, 800);
     });
 
-    function openAgentChat() {
+    function toggleWidget() {
+      const wrapper = document.getElementById('chat-widget-wrapper');
+      const pill = document.getElementById('launcher-pill');
       const messenger = document.querySelector('chat-messenger');
-      if (!messenger) return;
 
-      messenger.setAttribute('opened', 'true');
-      messenger.opened = true;
+      if (wrapper.classList.contains('active')) {
+        wrapper.classList.remove('active');
+        pill.style.display = 'flex';
+      } else {
+        wrapper.classList.add('active');
+        pill.style.display = 'none';
 
-      if (typeof messenger.openDialog === 'function') messenger.openDialog();
-      if (typeof messenger.open === 'function') messenger.open();
+        if (messenger) {
+          messenger.setAttribute('opened', 'true');
+          messenger.opened = true;
 
-      if (messenger.shadowRoot) {
-        const btn = messenger.shadowRoot.querySelector('button') || 
-                    messenger.shadowRoot.querySelector('[role="button"]');
-        if (btn) btn.click();
-      }
-    }
-
-    function toggleExpandWidget() {
-      const container = document.getElementById('chat-widget-container');
-      if (container) {
-        container.classList.toggle('expanded');
+          if (typeof messenger.openDialog === 'function') messenger.openDialog();
+          if (messenger.shadowRoot) {
+            const btn = messenger.shadowRoot.querySelector('button') || messenger.shadowRoot.querySelector('[role="button"]');
+            if (btn) btn.click();
+          }
+        }
       }
     }
   </script>
