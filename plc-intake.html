@@ -4,8 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HCA Patient Logistics Center | Transfer Intake</title>
-  
-  <!-- VERTEX AI HEAD SECTION SCRIPTS -->
+
+  <!-- PDF.js library for in-browser PDF extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+
+  <!-- VERTEX AI OFFICIAL SDK -->
   <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-default.css">
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-layout.css">
@@ -137,7 +145,7 @@
       align-items: center;
     }
 
-    /* White Features Card */
+    /* Features Card */
     .features-card {
       background: #ffffff;
       border-radius: 20px;
@@ -176,13 +184,37 @@
     .card-action-box {
       text-align: center;
       padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
     }
     .card-action-box .btn-create-account {
       padding: 12px 32px;
       font-size: 16px;
-      display: inline-block;
-      margin-bottom: 14px;
     }
+
+    /* Dedicated PDF/Document Upload Button */
+    .btn-upload-doc {
+      background-color: #f8fafc;
+      color: #0b3c5d;
+      border: 2px dashed #2b78b5;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-upload-doc:hover {
+      background-color: #e2e8f0;
+      border-color: #0b3c5d;
+      transform: translateY(-1px);
+    }
+
     .phone-support {
       font-size: 14px;
       color: #4a5568;
@@ -288,7 +320,7 @@
       max-width: 600px;
     }
 
-    /* CUSTOM FLOATING LAUNCHER PILL */
+    /* Floating Launcher Pill */
     .custom-chat-launcher {
       position: fixed;
       bottom: 24px;
@@ -334,7 +366,7 @@
       color: #718096;
     }
 
-    /* VERTEX AI EMBEDDED WIDGET CONTAINER */
+    /* Widget Container */
     #chat-widget-wrapper {
       position: fixed !important;
       bottom: 20px !important;
@@ -347,7 +379,31 @@
       display: none;
     }
     #chat-widget-wrapper.active {
-      display: block;
+      display: block !important;
+    }
+
+    /* Floating In-Widget PDF Banner */
+    #widget-pdf-bar {
+      position: absolute;
+      bottom: 78px;
+      left: 14px;
+      right: 14px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 6px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      z-index: 1000000;
+      font-size: 12px;
+      font-weight: 600;
+      color: #0b3c5d;
+      cursor: pointer;
+    }
+    #widget-pdf-bar:hover {
+      background: #f1f5f9;
     }
 
     chat-messenger {
@@ -377,13 +433,16 @@
 </head>
 <body>
 
+  <!-- Hidden Native File Input for PDF / Face Sheets / Docs -->
+  <input type="file" id="universal-file-input" accept=".pdf,.doc,.docx,.txt" style="display: none;" onchange="processDocumentFile(event)">
+
   <!-- TOP NAVIGATION -->
   <header class="mh1-header">
     <a href="#" class="mh1-logo">
       HCA Healthcare <span class="plc-tag">PLC Intake</span>
     </a>
     <div class="header-btns">
-      <button class="btn-create-account" onclick="toggleWidget()">New Transfer Request</button>
+      <button class="btn-create-account" onclick="openWidget()">New Transfer Request</button>
       <button class="btn-login">PLC Portal</button>
     </div>
   </header>
@@ -396,7 +455,7 @@
     </div>
 
     <div class="hero-grid">
-      <!-- LEFT FEATURES CARD -->
+      <!-- FEATURES CARD -->
       <div class="features-card">
         <div class="features-list">
           <div class="feature-item">
@@ -426,7 +485,10 @@
         </div>
 
         <div class="card-action-box">
-          <button class="btn-create-account" onclick="toggleWidget()">Start Intake Assistant</button>
+          <button class="btn-create-account" onclick="openWidget()">Start Intake Assistant</button>
+          <button class="btn-upload-doc" onclick="triggerFileUpload()">
+            <i class="fa-solid fa-file-arrow-up" style="color: #2b78b5; font-size: 16px;"></i> Upload Face Sheet / Transfer PDF
+          </button>
           <p class="phone-support">Urgent transfers or clinical questions? Call PLC directly at <a href="tel:8554226625">855-422-6625</a></p>
         </div>
       </div>
@@ -439,9 +501,7 @@
               <span>Transfer Queue</span>
               <span>PLC Active</span>
             </div>
-            <div class="phone-welcome">
-              Active Intakes
-            </div>
+            <div class="phone-welcome">Active Intakes</div>
             <div class="phone-section-title">Transfer Intake Workflow</div>
 
             <div class="phone-list-item">
@@ -449,7 +509,7 @@
                 <div class="phone-item-icon"><i class="fa-solid fa-file-arrow-up"></i></div>
                 <div>
                   <div class="phone-item-title">Document Extraction</div>
-                  <div class="phone-item-sub">PDF & Image OCR Parsing</div>
+                  <div class="phone-item-sub">PDF & Text Parsing</div>
                 </div>
               </div>
               <i class="fa-solid fa-check" style="font-size: 10px; color: #2b78b5;"></i>
@@ -502,7 +562,7 @@
   </section>
 
   <!-- CUSTOM FLOATING LAUNCHER PILL -->
-  <div class="custom-chat-launcher" id="launcher-pill" onclick="toggleWidget()">
+  <div class="custom-chat-launcher" id="launcher-pill" onclick="openWidget()">
     <div class="launcher-icon-circle">
       <i class="fa-regular fa-comment-dots"></i>
     </div>
@@ -512,38 +572,27 @@
     </div>
   </div>
 
-  <!-- FLOATING VERTEX AI WIDGET WITH YOUR DEPLOYMENT ID -->
+  <!-- FLOATING VERTEX AI WIDGET -->
   <div id="chat-widget-wrapper">
-    <chat-messenger
-      url-allowlist="*"
-      color-scheme="light"
-    >
+    <!-- Quick PDF Upload Trigger Inside Widget -->
+    <div id="widget-pdf-bar" onclick="triggerFileUpload()">
+      <span><i class="fa-solid fa-file-pdf" style="color: #e65100; margin-right: 6px;"></i> Upload PDF / Face Sheet</span>
+      <i class="fa-solid fa-arrow-up-from-bracket" style="color: #2b78b5;"></i>
+    </div>
+
+    <chat-messenger url-allowlist="*" color-scheme="light">
       <chat-messenger-container
         chat-title="PLC Intake Assistant"
         chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
-        enable-file-upload
       >
-        <chat-reset-session-button
-          slot="titlebar-actions"
-          title-text="Start new transfer"
-        ></chat-reset-session-button>
-
-        <chat-toggle-dialog-button
-          slot="titlebar-actions"
-          title-text-expanded="Collapse"
-          title-text-collapsed="Expand"
-        ></chat-toggle-dialog-button>
-
-        <chat-messenger-close-button
-          slot="titlebar-actions"
-          title-text="Close"
-          onclick="toggleWidget()"
-        ></chat-messenger-close-button>
+        <chat-reset-session-button slot="titlebar-actions" title-text="Start new transfer"></chat-reset-session-button>
+        <chat-toggle-dialog-button slot="titlebar-actions" title-text-expanded="Collapse" title-text-collapsed="Expand"></chat-toggle-dialog-button>
+        <chat-messenger-close-button slot="titlebar-actions" title-text="Close" onclick="closeWidget()"></chat-messenger-close-button>
       </chat-messenger-container>
     </chat-messenger>
   </div>
 
-  <!-- VERTEX AI SDK SCRIPT + PDF/DOC FILE PICKER ENABLER -->
+  <!-- GOOGLE CHAT SDK & IN-BROWSER PDF EXTRACTION ENGINE -->
   <script>
     window.addEventListener("chat-messenger-loaded", () => {
       chatSdk.registerContext(
@@ -555,66 +604,118 @@
           }
         }),
       );
-
-      // Enable PDF & DOC file selection in the widget's shadow DOM file input
-      enableAllFileTypes();
     });
 
-    // Helper function to unlock all file types (.pdf, .doc, .docx, images, etc.)
-    function enableAllFileTypes() {
-      const allowed = ".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*,*/*";
-
-      const unlockInputs = (root) => {
-        if (!root) return;
-        const fileInputs = root.querySelectorAll('input[type="file"]');
-        fileInputs.forEach(input => {
-          input.setAttribute('accept', allowed);
-        });
-
-        // Search recursively inside nested shadow roots
-        const allElements = root.querySelectorAll('*');
-        allElements.forEach(el => {
-          if (el.shadowRoot) {
-            unlockInputs(el.shadowRoot);
-          }
-        });
-      };
-
-      const scanAndUnlock = () => {
-        const messenger = document.querySelector('chat-messenger');
-        if (messenger && messenger.shadowRoot) {
-          unlockInputs(messenger.shadowRoot);
-        }
-      };
-
-      // Scan periodically as DOM elements render inside the web component
-      setInterval(scanAndUnlock, 1000);
-      document.addEventListener('click', scanAndUnlock, true);
-    }
-
-    function toggleWidget() {
+    function openWidget() {
       const wrapper = document.getElementById('chat-widget-wrapper');
       const pill = document.getElementById('launcher-pill');
       const messenger = document.querySelector('chat-messenger');
 
-      if (wrapper.classList.contains('active')) {
-        wrapper.classList.remove('active');
-        pill.style.display = 'flex';
-      } else {
-        wrapper.classList.add('active');
-        pill.style.display = 'none';
+      if (wrapper) wrapper.classList.add('active');
+      if (pill) pill.style.display = 'none';
 
-        if (messenger) {
-          messenger.setAttribute('opened', 'true');
-          messenger.opened = true;
+      if (messenger) {
+        messenger.setAttribute('opened', 'true');
+        messenger.opened = true;
+      }
+    }
 
-          if (typeof messenger.openDialog === 'function') messenger.openDialog();
-          if (messenger.shadowRoot) {
-            const btn = messenger.shadowRoot.querySelector('button') || messenger.shadowRoot.querySelector('[role="button"]');
-            if (btn) btn.click();
+    function closeWidget() {
+      const wrapper = document.getElementById('chat-widget-wrapper');
+      const pill = document.getElementById('launcher-pill');
+
+      if (wrapper) wrapper.classList.remove('active');
+      if (pill) pill.style.display = 'flex';
+    }
+
+    function triggerFileUpload() {
+      document.getElementById('universal-file-input').click();
+    }
+
+    // Process PDF and extract text directly in browser
+    async function processDocumentFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      openWidget();
+
+      let extractedText = "";
+
+      if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            extractedText += content.items.map(item => item.str).join(" ") + "\n";
           }
+        } catch (err) {
+          console.error("PDF Parsing error:", err);
+          alert("Could not read PDF. Please make sure the PDF has readable text.");
+          return;
+        }
+      } else {
+        try {
+          extractedText = await file.text();
+        } catch (err) {
+          console.error("Text file read error:", err);
         }
       }
+
+      if (extractedText && extractedText.trim().length > 0) {
+        const payload = `[Attached Document: ${file.name}]\nPlease extract all patient transfer details from this document:\n\n${extractedText.trim()}`;
+        sendMessageToChat(payload);
+      } else {
+        alert("No readable text found in the uploaded document.");
+      }
+
+      event.target.value = '';
+    }
+
+    // Programmatically injects and sends text through the chat messenger
+    function sendMessageToChat(text) {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      const trySend = () => {
+        const findAndSend = (root) => {
+          if (!root) return false;
+          const textarea = root.querySelector('textarea, input[type="text"]');
+          const sendBtn = root.querySelector('button[aria-label*="Send"], button.send-button, [slot="send-button"]');
+
+          if (textarea) {
+            textarea.focus();
+            textarea.value = text;
+            textarea.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+            textarea.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+
+            setTimeout(() => {
+              if (sendBtn && !sendBtn.disabled) {
+                sendBtn.click();
+              } else {
+                textarea.dispatchEvent(new KeyboardEvent('keydown', {
+                  key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, composed: true
+                }));
+              }
+            }, 300);
+            return true;
+          }
+
+          let found = false;
+          root.querySelectorAll('*').forEach(el => {
+            if (!found && el.shadowRoot) {
+              found = findAndSend(el.shadowRoot);
+            }
+          });
+          return found;
+        };
+
+        findAndSend(messenger.shadowRoot || messenger);
+      };
+
+      // Ensure widget is rendered before sending
+      setTimeout(trySend, 400);
     }
   </script>
 
