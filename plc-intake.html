@@ -401,7 +401,7 @@
         <div class="features-list">
           <div class="feature-item">
             <div class="feature-icon"><i class="fa-solid fa-file-pdf"></i></div>
-            <div class="feature-text">Upload Face Sheets, Charts, & Clinical Notes for Auto-Extraction</div>
+            <div class="feature-text">Upload Face Sheets, PDF Charts, & Notes for Auto-Extraction</div>
           </div>
           <div class="feature-item">
             <div class="feature-icon"><i class="fa-solid fa-hospital-user"></i></div>
@@ -522,8 +522,6 @@
         chat-title="PLC Intake Assistant"
         chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
         enable-file-upload
-        file-upload-accept=".pdf,.png,.jpg,.jpeg,.docx,.txt"
-        file-upload-max-size-mb="10"
       >
         <chat-reset-session-button
           slot="titlebar-actions"
@@ -545,7 +543,7 @@
     </chat-messenger>
   </div>
 
-  <!-- VERTEX AI SDK SCRIPT -->
+  <!-- VERTEX AI SDK SCRIPT + PDF/DOC FILE PICKER ENABLER -->
   <script>
     window.addEventListener("chat-messenger-loaded", () => {
       chatSdk.registerContext(
@@ -557,7 +555,42 @@
           }
         }),
       );
+
+      // Enable PDF & DOC file selection in the widget's shadow DOM file input
+      enableAllFileTypes();
     });
+
+    // Helper function to unlock all file types (.pdf, .doc, .docx, images, etc.)
+    function enableAllFileTypes() {
+      const allowed = ".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*,*/*";
+
+      const unlockInputs = (root) => {
+        if (!root) return;
+        const fileInputs = root.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => {
+          input.setAttribute('accept', allowed);
+        });
+
+        // Search recursively inside nested shadow roots
+        const allElements = root.querySelectorAll('*');
+        allElements.forEach(el => {
+          if (el.shadowRoot) {
+            unlockInputs(el.shadowRoot);
+          }
+        });
+      };
+
+      const scanAndUnlock = () => {
+        const messenger = document.querySelector('chat-messenger');
+        if (messenger && messenger.shadowRoot) {
+          unlockInputs(messenger.shadowRoot);
+        }
+      };
+
+      // Scan periodically as DOM elements render inside the web component
+      setInterval(scanAndUnlock, 1000);
+      document.addEventListener('click', scanAndUnlock, true);
+    }
 
     function toggleWidget() {
       const wrapper = document.getElementById('chat-widget-wrapper');
