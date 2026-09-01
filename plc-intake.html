@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* Reset & Fonts */
+    /* Reset & Global */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -193,7 +193,7 @@
       text-decoration: underline;
     }
 
-    /* Phone Graphic Representation */
+    /* Phone Graphic Mockup */
     .phone-wrapper {
       display: flex;
       justify-content: center;
@@ -339,8 +339,8 @@
       position: fixed !important;
       bottom: 20px !important;
       right: 20px !important;
-      width: 390px !important;
-      height: 600px !important;
+      width: 420px !important;
+      height: 640px !important;
       max-width: calc(100vw - 30px) !important;
       max-height: calc(100vh - 40px) !important;
       z-index: 999999 !important;
@@ -377,7 +377,7 @@
 </head>
 <body>
 
-  <!-- TOP HEADER -->
+  <!-- TOP NAVIGATION -->
   <header class="mh1-header">
     <a href="#" class="mh1-logo">
       HCA Healthcare <span class="plc-tag">PLC Intake</span>
@@ -392,7 +392,7 @@
   <section class="hero-section">
     <div class="hero-title-box">
       <h1>Patient Logistics Center <span>(PLC)</span></h1>
-      <p>Streamlined, rapid patient intake and transfer request documentation for clinical teams.</p>
+      <p>Streamlined, rapid patient intake and transfer documentation with automated face sheet extraction.</p>
     </div>
 
     <div class="hero-grid">
@@ -400,16 +400,16 @@
       <div class="features-card">
         <div class="features-list">
           <div class="feature-item">
+            <div class="feature-icon"><i class="fa-solid fa-file-pdf"></i></div>
+            <div class="feature-text">Upload Face Sheets, Charts, & Clinical Notes for Auto-Extraction</div>
+          </div>
+          <div class="feature-item">
             <div class="feature-icon"><i class="fa-solid fa-hospital-user"></i></div>
             <div class="feature-text">Submit Urgent Care, ED, or Inpatient Transfer Requests</div>
           </div>
           <div class="feature-item">
-            <div class="feature-icon"><i class="fa-solid fa-notes-medical"></i></div>
-            <div class="feature-text">Real-time Clinical Details & Capability Documentation</div>
-          </div>
-          <div class="feature-item">
             <div class="feature-icon"><i class="fa-solid fa-file-shield"></i></div>
-            <div class="feature-text">EMTALA Statements & Bed Requirement Capturing</div>
+            <div class="feature-text">EMTALA Statements & Bed Requirement Documentation</div>
           </div>
           <div class="feature-item">
             <div class="feature-icon"><i class="fa-solid fa-stethoscope"></i></div>
@@ -417,11 +417,11 @@
           </div>
           <div class="feature-item">
             <div class="feature-icon"><i class="fa-solid fa-id-card-clip"></i></div>
-            <div class="feature-text">Immediate Transfer Confirmation Tracking ID</div>
+            <div class="feature-text">Immediate Transfer Confirmation Tracking Reference</div>
           </div>
           <div class="feature-item">
             <div class="feature-icon"><i class="fa-solid fa-headset"></i></div>
-            <div class="feature-text">Seamless Hand-off to Placement Coordinators</div>
+            <div class="feature-text">Direct Hand-off to Placement Coordinators</div>
           </div>
         </div>
 
@@ -446,10 +446,10 @@
 
             <div class="phone-list-item">
               <div class="phone-item-left">
-                <div class="phone-item-icon"><i class="fa-solid fa-user"></i></div>
+                <div class="phone-item-icon"><i class="fa-solid fa-file-arrow-up"></i></div>
                 <div>
-                  <div class="phone-item-title">Patient Demographics</div>
-                  <div class="phone-item-sub">Name, DOB, Location</div>
+                  <div class="phone-item-title">Document Extraction</div>
+                  <div class="phone-item-sub">PDF & Image OCR Parsing</div>
                 </div>
               </div>
               <i class="fa-solid fa-check" style="font-size: 10px; color: #2b78b5;"></i>
@@ -457,10 +457,10 @@
 
             <div class="phone-list-item">
               <div class="phone-item-left">
-                <div class="phone-item-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                <div class="phone-item-icon"><i class="fa-solid fa-user"></i></div>
                 <div>
-                  <div class="phone-item-title">Clinical Acuity</div>
-                  <div class="phone-item-sub">Diagnosis & Reason</div>
+                  <div class="phone-item-title">Patient Demographics</div>
+                  <div class="phone-item-sub">Name, DOB, Gender</div>
                 </div>
               </div>
               <i class="fa-solid fa-check" style="font-size: 10px; color: #2b78b5;"></i>
@@ -497,7 +497,7 @@
   <section class="secondary-section">
     <div class="secondary-container">
       <h2>HCA Patient Logistics Center</h2>
-      <p>Providing seamless coordination and intake support for facility-to-facility patient transfers across the network.</p>
+      <p>Seamless coordination and automated intake for facility-to-facility patient transfers across the network.</p>
     </div>
   </section>
 
@@ -508,7 +508,7 @@
     </div>
     <div class="launcher-text">
       <span class="launcher-title">PLC Intake Assistant</span>
-      <span class="launcher-subtitle">Patient Transfer Requests</span>
+      <span class="launcher-subtitle">Transfer Requests & Document Upload</span>
     </div>
   </div>
 
@@ -522,6 +522,8 @@
         chat-title="PLC Intake Assistant"
         chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
         enable-file-upload
+        file-upload-accept=".pdf,.png,.jpg,.jpeg,.docx,.txt"
+        file-upload-max-size-mb="10"
       >
         <chat-reset-session-button
           slot="titlebar-actions"
