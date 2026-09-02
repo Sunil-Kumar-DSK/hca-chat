@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-  <!-- Google Chat Messenger SDK & Themes -->
+  <!-- Google Chat Messenger SDK & Default Styles -->
   <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-default.css" />
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-layout.css" />
@@ -333,73 +333,6 @@
       font-size: 18px;
     }
 
-    /* ----------------------------------------------------
-       CHAT MESSENGER NATIVE FLOATING POPUP SETTINGS
-       ---------------------------------------------------- */
-    chat-messenger {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 10000;
-      --chat-messenger-container-width: 430px;
-      --chat-messenger-container-height: 640px;
-    }
-
-    /* Custom Bottom-Right Floating Launcher Pill */
-    .custom-launcher-pill {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      border-radius: 36px;
-      padding: 8px 18px 8px 10px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
-      z-index: 9998;
-      transition: all 0.25s ease;
-    }
-
-    .custom-launcher-pill:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
-    }
-
-    .pill-icon-bubble {
-      background: var(--hca-blue);
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      flex-shrink: 0;
-    }
-
-    .pill-text-block {
-      display: flex;
-      flex-direction: column;
-      text-align: left;
-    }
-
-    .pill-title {
-      font-size: 13.5px;
-      font-weight: 700;
-      color: var(--text-dark);
-      line-height: 1.2;
-    }
-
-    .pill-subtitle {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 500;
-      margin-top: 2px;
-    }
-
     @media (max-width: 992px) {
       .main-container {
         grid-template-columns: 1fr;
@@ -409,10 +342,6 @@
       }
       header {
         padding: 0 20px;
-      }
-      chat-messenger {
-        --chat-messenger-container-width: calc(100vw - 32px);
-        --chat-messenger-container-height: calc(100vh - 48px);
       }
     }
   </style>
@@ -573,18 +502,7 @@
     </div>
   </main>
 
-  <!-- Custom Floating Launcher Pill -->
-  <div class="custom-launcher-pill" onclick="openChatMessenger()">
-    <div class="pill-icon-bubble">
-      <span class="material-symbols-outlined" style="font-size: 22px;">chat</span>
-    </div>
-    <div class="pill-text-block">
-      <span class="pill-title">PLC Intake Assistant</span>
-      <span class="pill-subtitle">Transfer Requests & Document Upload</span>
-    </div>
-  </div>
-
-  <!-- Google Chat SDK Script & Helpers -->
+  <!-- Google Chat SDK Registration & File Upload Unlocker -->
   <script>
     window.addEventListener("chat-messenger-loaded", () => {
       chatSdk.registerContext(
@@ -597,73 +515,50 @@
         })
       );
 
-      // Unlock PDF, DOC, DOCX in file picker
-      enableDocumentFileTypes();
+      // Periodically scan shadow DOM to ensure PDF, DOC, DOCX and Images are accepted
+      setInterval(unlockAllFileTypes, 1000);
     });
 
-    // Helper: Opens the chat popup and hides the launcher pill
+    // Programmatic opener connected to both portal buttons
     function openChatMessenger() {
       const messenger = document.querySelector('chat-messenger');
-      const pill = document.querySelector('.custom-launcher-pill');
       if (messenger) {
-        messenger.setAttribute('opened', 'true');
+        // Trigger the internal SDK open event
+        const button = messenger.shadowRoot ? messenger.shadowRoot.querySelector('#widget-button, [role="button"]') : null;
+        if (button) {
+          button.click();
+        } else {
+          messenger.setAttribute('opened', 'true');
+        }
       }
-      if (pill) {
-        pill.style.display = 'none';
-      }
-      enableDocumentFileTypes();
+      unlockAllFileTypes();
     }
 
-    // Helper: Closes the chat popup and restores the launcher pill
-    function closeChatMessenger() {
-      const messenger = document.querySelector('chat-messenger');
-      const pill = document.querySelector('.custom-launcher-pill');
-      if (messenger) {
-        messenger.removeAttribute('opened');
-      }
-      if (pill) {
-        pill.style.display = 'flex';
-      }
-    }
-
-    // Attach click listeners to all close buttons in the chat header
-    document.addEventListener('click', (e) => {
-      const closeBtn = e.target.closest('chat-messenger-close-button') || 
-                       e.target.closest('[slot="titlebar-actions"]:last-child');
-      if (closeBtn) {
-        closeChatMessenger();
-      }
-    });
-
-    // Pierces the Web Component Shadow DOM to allow PDFs and Docs in file dialog
-    function enableDocumentFileTypes() {
-      setTimeout(() => {
-        const messenger = document.querySelector('chat-messenger');
-        if (!messenger) return;
-
-        const scanAndUnlock = (root) => {
-          if (!root) return;
-          const fileInputs = root.querySelectorAll ? root.querySelectorAll('input[type="file"]') : [];
-          fileInputs.forEach(input => {
-            // Unlocks PDF, Word documents, text, and images
+    // Helper to allow all documents and images in the file browser
+    function unlockAllFileTypes() {
+      const scanTree = (root) => {
+        if (!root) return;
+        const inputs = root.querySelectorAll ? root.querySelectorAll('input[type="file"]') : [];
+        inputs.forEach(input => {
+          if (input.getAttribute('accept') !== '*/*') {
             input.setAttribute('accept', '.pdf,.doc,.docx,.txt,image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-          });
-          const allElements = root.querySelectorAll ? root.querySelectorAll('*') : [];
-          allElements.forEach(el => {
-            if (el.shadowRoot) scanAndUnlock(el.shadowRoot);
-          });
-        };
+          }
+        });
+        const allNodes = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        allNodes.forEach(node => {
+          if (node.shadowRoot) scanTree(node.shadowRoot);
+        });
+      };
 
-        scanAndUnlock(messenger);
-        if (messenger.shadowRoot) scanAndUnlock(messenger.shadowRoot);
-
-        const container = document.querySelector('chat-messenger-container');
-        if (container && container.shadowRoot) scanAndUnlock(container.shadowRoot);
-      }, 500);
+      const messenger = document.querySelector('chat-messenger');
+      if (messenger) {
+        scanTree(messenger);
+        if (messenger.shadowRoot) scanTree(messenger.shadowRoot);
+      }
     }
   </script>
 
-  <!-- Google Chat Messenger Component (Starts Closed by Default) -->
+  <!-- Native Google Chat Messenger Component -->
   <chat-messenger url-allowlist="*">
     <chat-messenger-container
       chat-title="PLC Intake Assistant"
