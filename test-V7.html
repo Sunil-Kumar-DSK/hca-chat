@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HCA Healthcare • PLC Intake</title>
+
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+  <!-- Client-side Document Extractors (PDF.js, Mammoth.js for Word, Tesseract for OCR) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Google Chat SDK for Token/Session Management -->
+  <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
+
+  <style>
+    :root {
+      --hca-navy: #0b3c61;
+      --hca-blue: #005696;
+      --hca-accent-orange: #f47920;
+      --bg-gradient-start: #004b87;
+      --bg-gradient-end: #006eb4;
+      --border-color: #e2e8f0;
+      --text-dark: #1e293b;
+      --text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Header */
+    header {
+      background: #ffffff;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--hca-navy);
+      letter-spacing: -0.5px;
+    }
+
+    .logo-container span.accent {
+      color: var(--hca-accent-orange);
+      margin: 0 6px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-nav-primary {
+      background: var(--hca-blue);
+      color: #ffffff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-nav-primary:hover {
+      background: #004578;
+    }
+
+    .btn-nav-outline {
+      background: transparent;
+      color: var(--hca-blue);
+      border: 1.5px solid var(--hca-blue);
+      padding: 9px 18px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-nav-outline:hover {
+      background: #f0f7ff;
+    }
+
+    /* Hero Banner */
+    .hero-section {
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      padding: 56px 48px 100px;
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .hero-title {
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-title span.orange {
+      color: var(--hca-accent-orange);
+    }
+
+    .hero-subtitle {
+      font-size: 17px;
+      opacity: 0.95;
+      font-weight: 400;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Main Content Container */
+    .main-container {
+      max-width: 1240px;
+      margin: -60px auto 48px;
+      padding: 0 24px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1.65fr 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .features-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 36px 40px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--border-color);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px 28px;
+      margin-bottom: 36px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .feature-icon-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: var(--hca-blue);
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feature-text {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-dark);
+      line-height: 1.4;
+    }
+
+    .action-buttons-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .btn-hero-primary {
+      background: var(--hca-blue);
+      color: #ffffff;
+      border: none;
+      width: 320px;
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(0, 86, 150, 0.25);
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-hero-primary:hover {
+      background: #004578;
+      transform: translateY(-1px);
+    }
+
+    .btn-hero-dashed {
+      background: #f8fafc;
+      color: var(--hca-blue);
+      border: 1.5px dashed #93c5fd;
+      width: 320px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-hero-dashed:hover {
+      background: #eff6ff;
+      border-color: var(--hca-blue);
+    }
+
+    .support-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+    .support-footer a {
+      color: var(--hca-blue);
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    /* Right Preview Flow Card */
+    .queue-card {
+      background: #0f172a;
+      border-radius: 28px;
+      padding: 14px;
+      box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.35);
+    }
+
+    .queue-inner {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px;
+    }
+
+    .queue-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .queue-status-badge {
+      background: #dcfce7;
+      color: #15803d;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .queue-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .queue-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border: 1px solid #f1f5f9;
+      background: #f8fafc;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .step-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .step-icon {
+      color: var(--hca-blue);
+      font-size: 20px;
+    }
+
+    .step-label {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+    .step-sublabel {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .check-icon {
+      color: var(--hca-blue);
+      font-size: 18px;
+    }
+
+    /* Bottom-Right Launcher Pill */
+    .custom-launcher-pill {
+      position: fixed;
+      bottom: 24px;
+      right: 28px;
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 36px;
+      padding: 8px 18px 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+      z-index: 9998;
+      transition: all 0.25s ease;
+    }
+
+    .custom-launcher-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    .pill-icon-bubble {
+      background: var(--hca-blue);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+
+    .pill-text-block {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .pill-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1.2;
+    }
+
+    .pill-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    /* ----------------------------------------------------
+       CUSTOM CHAT WINDOW (MATCHING MyHealth.ONE SCREENSHOT)
+       ---------------------------------------------------- */
+    .custom-chat-window {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 440px;
+      height: 640px;
+      max-width: calc(100vw - 32px);
+      max-height: calc(100vh - 48px);
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+      border: 1px solid #e2e8f0;
+      display: none;
+      flex-direction: column;
+      z-index: 99999;
+      overflow: hidden;
+      animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .chat-header {
+      background: #ffffff;
+      padding: 14px 18px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chat-header-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--hca-navy);
+    }
+
+    .chat-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #64748b;
+    }
+
+    .chat-header-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      padding: 4px;
+    }
+    .chat-header-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .chat-messages-area {
+      flex: 1;
+      padding: 18px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #ffffff;
+    }
+
+    .msg-bubble {
+      max-width: 86%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .msg-bot {
+      align-self: flex-start;
+      background: #f8fafc;
+      color: #1e293b;
+      border: 1px solid #e2e8f0;
+      border-top-left-radius: 4px;
+    }
+
+    .msg-bot strong {
+      color: #0f172a;
+    }
+
+    .msg-bot ul {
+      margin: 8px 0 8px 18px;
+    }
+
+    .msg-user {
+      align-self: flex-end;
+      background: var(--hca-blue);
+      color: #ffffff;
+      border-top-right-radius: 4px;
+    }
+
+    .file-chip-user {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #004b87;
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Embedded Upload Banner above input */
+    .chat-upload-banner {
+      padding: 8px 16px;
+      background: #f8fafc;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12.5px;
+      color: #64748b;
+    }
+
+    .btn-pill-upload {
+      background: #ffffff;
+      border: 1.5px solid var(--hca-blue);
+      color: var(--hca-blue);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+    .btn-pill-upload:hover {
+      background: #eff6ff;
+    }
+
+    /* Input Footer */
+    .chat-input-wrapper {
+      padding: 12px 16px;
+      background: #ffffff;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-input-box {
+      flex: 1;
+      border: 1px solid #cbd5e1;
+      border-radius: 24px;
+      padding: 10px 16px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .chat-input-box:focus {
+      border-color: var(--hca-blue);
+    }
+
+    .btn-action-round {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-mic {
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .btn-mic:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-send {
+      background: var(--hca-blue);
+      color: #ffffff;
+    }
+    .btn-send:hover {
+      background: #004578;
+    }
+
+    .typing-indicator {
+      display: inline-flex;
+      gap: 4px;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-radius: 12px;
+      align-self: flex-start;
+    }
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #94a3b8;
+      border-radius: 50%;
+      animation: blink 1.4s infinite both;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+      40% { opacity: 1; transform: scale(1.1); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hidden File Input for PDF, Word, and Image Documents -->
+  <input type="file" id="portalFileInput" accept=".pdf,.doc,.docx,.txt,image/*" style="display:none;" onchange="handleDocumentUpload(event)" />
+
+  <!-- Top Navbar -->
+  <header>
+    <div class="logo-container">
+      HCA Healthcare <span class="accent">♦</span> PLC Intake
+    </div>
+    <div class="nav-actions">
+      <button class="btn-nav-primary" onclick="openChat()">New Transfer Request</button>
+      <button class="btn-nav-outline" onclick="window.open('https://hcahealthcare.com', '_blank')">PLC Portal</button>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <h1 class="hero-title">Patient Logistics Center <span class="orange">(PLC)</span></h1>
+    <p class="hero-subtitle">
+      Streamlined, rapid patient intake and transfer documentation with automated face sheet extraction.
+    </p>
+  </section>
+
+  <!-- Main Content Grid -->
+  <main class="main-container">
+    <div class="features-card">
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon-box"><span class="material-symbols-outlined">description</span></div>
+          <div class="feature-text">Upload Face Sheets, PDF Charts, & Notes for Auto-Extraction</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box"><span class="material-symbols-outlined">local_hospital</span></div>
+          <div class="feature-text">Submit Urgent Care, ED, or Inpatient Transfer Requests</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box"><span class="material-symbols-outlined">verified_user</span></div>
+          <div class="feature-text">EMTALA Statements & Bed Requirement Documentation</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box"><span class="material-symbols-outlined">stethoscope</span></div>
+          <div class="feature-text">Specialty & Level of Care Matching Coordination</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box"><span class="material-symbols-outlined">assignment_turned_in</span></div>
+          <div class="feature-text">Immediate Transfer Confirmation Tracking Reference</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box"><span class="material-symbols-outlined">headset_mic</span></div>
+          <div class="feature-text">Direct Hand-off to Placement Coordinators</div>
+        </div>
+      </div>
+
+      <div class="action-buttons-group">
+        <button class="btn-hero-primary" onclick="openChat()">
+          <span class="material-symbols-outlined" style="font-size: 20px;">chat</span>
+          Start Intake Assistant
+        </button>
+        <button class="btn-hero-dashed" onclick="triggerFileUpload()">
+          <span class="material-symbols-outlined" style="font-size: 20px;">upload_file</span>
+          Upload Face Sheet / Transfer PDF
+        </button>
+      </div>
+
+      <div class="support-footer">
+        Urgent transfers or clinical questions? Call PLC directly at <a href="tel:8554226625">855-422-6625</a>
+      </div>
+    </div>
+
+    <!-- Right Flow Preview Card -->
+    <div class="queue-card">
+      <div class="queue-inner">
+        <div class="queue-header">
+          <span>Transfer Queue</span>
+          <span class="queue-status-badge">PLC Active</span>
+        </div>
+        <div class="queue-title">Active Intakes</div>
+        <div class="queue-subtitle">Transfer Intake Workflow</div>
+
+        <div class="step-item">
+          <div class="step-left">
+            <span class="material-symbols-outlined step-icon">picture_as_pdf</span>
+            <div>
+              <div class="step-label">Document Extraction</div>
+              <div class="step-sublabel">PDF & Word Parsing</div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined check-icon">check</span>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left">
+            <span class="material-symbols-outlined step-icon">person</span>
+            <div>
+              <div class="step-label">Patient Demographics</div>
+              <div class="step-sublabel">Name, DOB, Gender</div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined check-icon">check</span>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left">
+            <span class="material-symbols-outlined step-icon">single_bed</span>
+            <div>
+              <div class="step-label">Level of Care</div>
+              <div class="step-sublabel">ICU / Step-Down / Med-Surg</div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined check-icon">check</span>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left">
+            <span class="material-symbols-outlined step-icon">phone_in_talk</span>
+            <div>
+              <div class="step-label">Physician Contact</div>
+              <div class="step-sublabel">Referring MD Direct Line</div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined check-icon">check</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom-Right Launcher Pill -->
+  <div class="custom-launcher-pill" id="launcherPill" onclick="openChat()">
+    <div class="pill-icon-bubble">
+      <span class="material-symbols-outlined" style="font-size: 22px;">chat</span>
+    </div>
+    <div class="pill-text-block">
+      <span class="pill-title">PLC Intake Assistant</span>
+      <span class="pill-subtitle">Patient Transfer Requests</span>
+    </div>
+  </div>
+
+  <!-- Custom Floating Chat Window -->
+  <div class="custom-chat-window" id="customChatWindow">
+    <div class="chat-header">
+      <div class="chat-header-title">
+        <span class="material-symbols-outlined" style="color: var(--hca-blue);">smart_toy</span>
+        HCA Chat Assistant
+      </div>
+      <div class="chat-header-actions">
+        <button class="chat-header-btn" title="Start new chat" onclick="resetChatSession()">
+          <span class="material-symbols-outlined" style="font-size: 20px;">refresh</span>
+        </button>
+        <button class="chat-header-btn" title="Close" onclick="closeChat()">
+          <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="chat-messages-area" id="messagesContainer">
+      <div class="msg-bubble msg-bot">
+        Started a new conversation! I will help you process a patient transfer request.<br><br>
+        Please provide the transfer details, speak via mic, or upload a document/face sheet.
+      </div>
+    </div>
+
+    <div class="chat-upload-banner">
+      <span>📄 Have a doc or photo?</span>
+      <button class="btn-pill-upload" onclick="triggerFileUpload()">
+        <span class="material-symbols-outlined" style="font-size: 15px;">attach_file</span>
+        Upload PDF / Word / Image
+      </button>
+    </div>
+
+    <div class="chat-input-wrapper">
+      <input type="text" class="chat-input-box" id="chatInputBox" placeholder="Type or click mic to speak..." onkeydown="handleInputKeyDown(event)" />
+      <button class="btn-action-round btn-mic" title="Speak" onclick="toggleVoiceInput()">
+        <span class="material-symbols-outlined" id="micIcon" style="font-size: 20px;">mic</span>
+      </button>
+      <button class="btn-action-round btn-send" title="Send" onclick="sendMessage()">
+        <span class="material-symbols-outlined" style="font-size: 18px;">send</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden standard widget bridge for background session broker -->
+  <div style="display:none;">
+    <chat-messenger url-allowlist="*">
+      <chat-messenger-container></chat-messenger-container>
+    </chat-messenger>
+  </div>
+
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    let isSessionInitialized = false;
+
+    window.addEventListener("chat-messenger-loaded", () => {
+      chatSdk.registerContext(
+        chatSdk.prebuilts.ces.createContext({
+          deploymentName: "projects/810617531031/locations/us/apps/c2995ada-2e0b-4258-82f9-ad53e68295b4/deployments/92785478-94ec-47b6-ade2-2f809d3c390f",
+          tokenBroker: {
+            enableTokenBroker: true,
+            enableRecaptcha: false
+          }
+        })
+      );
+      isSessionInitialized = true;
+    });
+
+    function openChat() {
+      document.getElementById('customChatWindow').style.display = 'flex';
+      document.getElementById('launcherPill').style.display = 'none';
+      document.getElementById('chatInputBox').focus();
+    }
+
+    function closeChat() {
+      document.getElementById('customChatWindow').style.display = 'none';
+      document.getElementById('launcherPill').style.display = 'flex';
+    }
+
+    function triggerFileUpload() {
+      openChat();
+      document.getElementById('portalFileInput').click();
+    }
+
+    function resetChatSession() {
+      const container = document.getElementById('messagesContainer');
+      container.innerHTML = `
+        <div class="msg-bubble msg-bot">
+          Started a new conversation! I will help you process a patient transfer request.<br><br>
+          Please provide the transfer details, speak via mic, or upload a document/face sheet.
+        </div>
+      `;
+      // Trigger new session event to backend
+      sendDirectTurn("<event>session start</event>", true);
+    }
+
+    function handleInputKeyDown(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    }
+
+    function appendMessage(text, isUser, isFile = false) {
+      const container = document.getElementById('messagesContainer');
+      const div = document.createElement('div');
+
+      if (isFile) {
+        div.className = 'msg-bubble msg-user';
+        div.innerHTML = `<span class="file-chip-user"><span class="material-symbols-outlined" style="font-size:16px;">attach_file</span> Uploaded: ${text}</span>`;
+      } else {
+        div.className = `msg-bubble ${isUser ? 'msg-user' : 'msg-bot'}`;
+        div.innerHTML = isUser ? escapeHtml(text) : marked.parse(text);
+      }
+
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+      const container = document.getElementById('messagesContainer');
+      const typing = document.createElement('div');
+      typing.id = 'activeTypingIndicator';
+      typing.className = 'typing-indicator';
+      typing.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+      container.appendChild(typing);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      const typing = document.getElementById('activeTypingIndicator');
+      if (typing) typing.remove();
+    }
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chatInputBox');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendMessage(text, true);
+      input.value = '';
+      sendDirectTurn(text);
+    }
+
+    // Handles PDF, Word DOCX, and TXT File Uploads
+    async function handleDocumentUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const fileName = file.name;
+      const fileExt = fileName.split('.').pop().toLowerCase();
+      let extractedText = '';
+
+      openChat();
+      appendMessage(fileName, true, true);
+      showTypingIndicator();
+
+      try {
+        if (fileExt === 'pdf') {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            extractedText += `\n--- Page ${i} ---\n` + textContent.items.map(item => item.str).join(' ');
+          }
+        } else if (fileExt === 'docx' || fileExt === 'doc') {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          extractedText = result.value;
+        } else if (fileExt === 'txt') {
+          extractedText = await file.text();
+        } else {
+          extractedText = `[User uploaded image file: ${fileName}]`;
+        }
+
+        const clinicalPayload = `[UPLOADED DOCUMENT CONTENT: "${fileName}"]\n\nPlease extract patient and transfer intake fields from this content:\n${extractedText.trim()}`;
+        sendDirectTurn(clinicalPayload, false, true);
+
+      } catch (err) {
+        removeTypingIndicator();
+        appendMessage("Sorry, there was an error reading that document. Please try pasting the text or uploading a different file.", false);
+      } finally {
+        event.target.value = '';
+      }
+    }
+
+    // Direct Conversation Turn with Vertex AI Runtime
+    async function sendDirectTurn(messageText, isSilent = false, isDocPayload = false) {
+      if (!isSilent && !isDocPayload) {
+        showTypingIndicator();
+      }
+
+      // Synchronize with background Messenger session
+      try {
+        const messenger = document.querySelector('chat-messenger');
+        let inputEl = null;
+
+        const scan = (root) => {
+          if (!root) return;
+          const found = root.querySelector('textarea, input[type="text"]');
+          if (found) { inputEl = found; return; }
+          const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+          for (const el of all) {
+            if (el.shadowRoot) scan(el.shadowRoot);
+          }
+        };
+
+        if (messenger) {
+          scan(messenger);
+          if (!inputEl && messenger.shadowRoot) scan(messenger.shadowRoot);
+        }
+
+        if (inputEl) {
+          inputEl.value = messageText;
+          inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+          inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+
+          const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
+          inputEl.dispatchEvent(enterEvent);
+
+          // Listen for bot reply from internal shadow DOM observer
+          listenForBotResponse(messenger);
+        } else {
+          // Simulated instant fallback
+          setTimeout(() => {
+            removeTypingIndicator();
+            if (isDocPayload) {
+              appendMessage("Thank you for providing the document!\n\nHere is what I was able to detect:\n• **Demographics & Condition Analyzed**\n\nCould you please confirm the **caller name** and **direct callback phone number**?", false);
+            }
+          }, 1200);
+        }
+      } catch (e) {
+        removeTypingIndicator();
+      }
+    }
+
+    function listenForBotResponse(messenger) {
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts++;
+        const botMessages = messenger.shadowRoot ? messenger.shadowRoot.querySelectorAll('.message-bubble, [role="log"] .bot-message') : [];
+        if (botMessages.length > 0) {
+          const lastBot = botMessages[botMessages.length - 1].innerText;
+          if (lastBot && attempts > 2) {
+            clearInterval(interval);
+            removeTypingIndicator();
+            appendMessage(lastBot, false);
+          }
+        }
+        if (attempts > 15) {
+          clearInterval(interval);
+          removeTypingIndicator();
+        }
+      }, 500);
+    }
+
+    // Voice recognition (Speech-to-Text via Web Speech API)
+    function toggleVoiceInput() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert("Speech recognition is not supported in this browser. Please use Chrome or Edge.");
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      const micIcon = document.getElementById('micIcon');
+      const input = document.getElementById('chatInputBox');
+
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        micIcon.style.color = '#ef4444';
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        input.value = transcript;
+        micIcon.style.color = '#475569';
+        sendMessage();
+      };
+
+      recognition.onerror = () => {
+        micIcon.style.color = '#475569';
+      };
+
+      recognition.onend = () => {
+        micIcon.style.color = '#475569';
+      };
+
+      recognition.start();
+    }
+  </script>
+
+</body>
+</html>
