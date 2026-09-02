@@ -11,12 +11,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-  <!-- Client-side Document Extractors (PDF.js, Mammoth.js for Word, Tesseract for OCR) -->
+  <!-- Client-side Document Extractors -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-  <!-- Google Chat SDK for Token/Session Management -->
+  <!-- Google Chat SDK -->
   <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
 
   <style>
@@ -46,7 +46,7 @@
       position: relative;
     }
 
-    /* Header */
+    /* Top Navigation Header */
     header {
       background: #ffffff;
       height: 72px;
@@ -135,7 +135,7 @@
       margin: 0 auto;
     }
 
-    /* Main Content Container */
+    /* Main Container */
     .main-container {
       max-width: 1240px;
       margin: -60px auto 48px;
@@ -392,13 +392,13 @@
     }
 
     /* ----------------------------------------------------
-       CUSTOM CHAT WINDOW (MATCHING MyHealth.ONE SCREENSHOT)
+       CUSTOM CHAT WINDOW
        ---------------------------------------------------- */
     .custom-chat-window {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      width: 440px;
+      width: 430px;
       height: 640px;
       max-width: calc(100vw - 32px);
       max-height: calc(100vh - 48px);
@@ -432,15 +432,14 @@
       align-items: center;
       gap: 8px;
       font-weight: 700;
-      font-size: 16px;
+      font-size: 15.5px;
       color: var(--hca-navy);
     }
 
     .chat-header-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
-      color: #64748b;
+      gap: 10px;
     }
 
     .chat-header-btn {
@@ -461,16 +460,16 @@
 
     .chat-messages-area {
       flex: 1;
-      padding: 18px;
+      padding: 16px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       background: #ffffff;
     }
 
     .msg-bubble {
-      max-width: 86%;
+      max-width: 88%;
       padding: 12px 16px;
       border-radius: 14px;
       font-size: 14px;
@@ -491,7 +490,7 @@
     }
 
     .msg-bot ul {
-      margin: 8px 0 8px 18px;
+      margin: 6px 0 6px 18px;
     }
 
     .msg-user {
@@ -508,21 +507,24 @@
       background: #004b87;
       color: #ffffff;
       padding: 6px 12px;
-      border-radius: 20px;
+      border-radius: 16px;
       font-size: 13px;
       font-weight: 600;
     }
 
-    /* Embedded Upload Banner above input */
+    /* ----------------------------------------------------
+       HIGHLIGHTED UPLOAD BAR (Natural layout above input)
+       ---------------------------------------------------- */
     .chat-upload-banner {
-      padding: 8px 16px;
+      padding: 9px 16px;
       background: #f8fafc;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       font-size: 12.5px;
-      color: #64748b;
+      color: #475569;
+      font-weight: 500;
     }
 
     .btn-pill-upload {
@@ -545,20 +547,20 @@
 
     /* Input Footer */
     .chat-input-wrapper {
-      padding: 12px 16px;
+      padding: 10px 16px 14px;
       background: #ffffff;
       border-top: 1px solid #f1f5f9;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .chat-input-box {
       flex: 1;
       border: 1px solid #cbd5e1;
       border-radius: 24px;
-      padding: 10px 16px;
-      font-size: 14px;
+      padding: 9px 16px;
+      font-size: 13.5px;
       outline: none;
       transition: border-color 0.2s;
     }
@@ -567,8 +569,8 @@
     }
 
     .btn-action-round {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       border: none;
       display: flex;
@@ -620,7 +622,7 @@
 </head>
 <body>
 
-  <!-- Hidden File Input for PDF, Word, and Image Documents -->
+  <!-- Hidden File Input supporting PDF, Word, TXT, Images -->
   <input type="file" id="portalFileInput" accept=".pdf,.doc,.docx,.txt,image/*" style="display:none;" onchange="handleDocumentUpload(event)" />
 
   <!-- Top Navbar -->
@@ -775,11 +777,12 @@
 
     <div class="chat-messages-area" id="messagesContainer">
       <div class="msg-bubble msg-bot">
-        Started a new conversation! I will help you process a patient transfer request.<br><br>
-        Please provide the transfer details, speak via mic, or upload a document/face sheet.
+        Started a new conversation! I will need your <strong>Full Name, Date of Birth, Phone Number, Facility</strong>, and transfer reason.<br><br>
+        Please provide your details, speak via mic, or upload a document/image.
       </div>
     </div>
 
+    <!-- Highlighted Upload Bar (Natural layout directly above input box) -->
     <div class="chat-upload-banner">
       <span>📄 Have a doc or photo?</span>
       <button class="btn-pill-upload" onclick="triggerFileUpload()">
@@ -799,8 +802,8 @@
     </div>
   </div>
 
-  <!-- Hidden standard widget bridge for background session broker -->
-  <div style="display:none;">
+  <!-- Fully rendered background broker connection -->
+  <div style="position: fixed; bottom: 0; right: 0; width: 300px; height: 300px; opacity: 0; pointer-events: none; z-index: -1;">
     <chat-messenger url-allowlist="*">
       <chat-messenger-container></chat-messenger-container>
     </chat-messenger>
@@ -810,8 +813,6 @@
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
-
-    let isSessionInitialized = false;
 
     window.addEventListener("chat-messenger-loaded", () => {
       chatSdk.registerContext(
@@ -823,7 +824,9 @@
           }
         })
       );
-      isSessionInitialized = true;
+
+      // Listen for responses in background shadow DOM
+      setupShadowObserver();
     });
 
     function openChat() {
@@ -846,12 +849,11 @@
       const container = document.getElementById('messagesContainer');
       container.innerHTML = `
         <div class="msg-bubble msg-bot">
-          Started a new conversation! I will help you process a patient transfer request.<br><br>
-          Please provide the transfer details, speak via mic, or upload a document/face sheet.
+          Started a new conversation! I will need your <strong>Full Name, Date of Birth, Phone Number, Facility</strong>, and transfer reason.<br><br>
+          Please provide your details, speak via mic, or upload a document/image.
         </div>
       `;
-      // Trigger new session event to backend
-      sendDirectTurn("<event>session start</event>", true);
+      dispatchToAgent("<event>session start</event>");
     }
 
     function handleInputKeyDown(e) {
@@ -866,7 +868,7 @@
 
       if (isFile) {
         div.className = 'msg-bubble msg-user';
-        div.innerHTML = `<span class="file-chip-user"><span class="material-symbols-outlined" style="font-size:16px;">attach_file</span> Uploaded: ${text}</span>`;
+        div.innerHTML = `<span class="file-chip-user"><span class="material-symbols-outlined" style="font-size:16px;">attach_file</span> Uploaded: ${escapeHtml(text)}</span>`;
       } else {
         div.className = `msg-bubble ${isUser ? 'msg-user' : 'msg-bot'}`;
         div.innerHTML = isUser ? escapeHtml(text) : marked.parse(text);
@@ -878,6 +880,7 @@
 
     function showTypingIndicator() {
       const container = document.getElementById('messagesContainer');
+      if (document.getElementById('activeTypingIndicator')) return;
       const typing = document.createElement('div');
       typing.id = 'activeTypingIndicator';
       typing.className = 'typing-indicator';
@@ -903,10 +906,11 @@
 
       appendMessage(text, true);
       input.value = '';
-      sendDirectTurn(text);
+      showTypingIndicator();
+      dispatchToAgent(text);
     }
 
-    // Handles PDF, Word DOCX, and TXT File Uploads
+    // Handles Document Extraction for PDF, Word, TXT
     async function handleDocumentUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -923,10 +927,10 @@
         if (fileExt === 'pdf') {
           const arrayBuffer = await file.arrayBuffer();
           const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-          for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) {
+          for (let i = 1; i <= Math.min(pdf.numPages, 4); i++) {
             const page = await pdf.getPage(i);
             const textContent = await page.getTextContent();
-            extractedText += `\n--- Page ${i} ---\n` + textContent.items.map(item => item.str).join(' ');
+            extractedText += ' ' + textContent.items.map(item => item.str).join(' ');
           }
         } else if (fileExt === 'docx' || fileExt === 'doc') {
           const arrayBuffer = await file.arrayBuffer();
@@ -935,91 +939,92 @@
         } else if (fileExt === 'txt') {
           extractedText = await file.text();
         } else {
-          extractedText = `[User uploaded image file: ${fileName}]`;
+          extractedText = `[User uploaded photo/image: ${fileName}]`;
         }
 
-        const clinicalPayload = `[UPLOADED DOCUMENT CONTENT: "${fileName}"]\n\nPlease extract patient and transfer intake fields from this content:\n${extractedText.trim()}`;
-        sendDirectTurn(clinicalPayload, false, true);
+        extractedText = extractedText.replace(/\s+/g, ' ').trim();
+        const clinicalPayload = `[Attached Document: "${fileName}"] Details: ${extractedText.substring(0, 1500)}`;
+        dispatchToAgent(clinicalPayload);
 
       } catch (err) {
         removeTypingIndicator();
-        appendMessage("Sorry, there was an error reading that document. Please try pasting the text or uploading a different file.", false);
+        appendMessage("Could not read document contents. Please provide details in chat.", false);
       } finally {
         event.target.value = '';
       }
     }
 
-    // Direct Conversation Turn with Vertex AI Runtime
-    async function sendDirectTurn(messageText, isSilent = false, isDocPayload = false) {
-      if (!isSilent && !isDocPayload) {
-        showTypingIndicator();
-      }
+    // Dispatches message to the live Vertex AI agent session
+    function dispatchToAgent(text) {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
 
-      // Synchronize with background Messenger session
-      try {
-        const messenger = document.querySelector('chat-messenger');
-        let inputEl = null;
-
-        const scan = (root) => {
-          if (!root) return;
-          const found = root.querySelector('textarea, input[type="text"]');
-          if (found) { inputEl = found; return; }
-          const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
-          for (const el of all) {
-            if (el.shadowRoot) scan(el.shadowRoot);
+      const findInput = (root) => {
+        if (!root) return null;
+        let el = root.querySelector('textarea, input[type="text"]');
+        if (el) return { el, root };
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        for (const item of all) {
+          if (item.shadowRoot) {
+            const r = findInput(item.shadowRoot);
+            if (r) return r;
           }
+        }
+        return null;
+      };
+
+      const res = findInput(messenger) || (messenger.shadowRoot ? findInput(messenger.shadowRoot) : null);
+      if (res && res.el) {
+        res.el.value = text;
+        res.el.dispatchEvent(new Event('input', { bubbles: true }));
+        res.el.dispatchEvent(new Event('change', { bubbles: true }));
+
+        setTimeout(() => {
+          const sendBtn = res.root.querySelector('button[aria-label="Send"], #send-button, .send-button, button:has(svg)');
+          if (sendBtn) {
+            sendBtn.click();
+          } else {
+            const enterEvt = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
+            res.el.dispatchEvent(enterEvt);
+          }
+        }, 200);
+      }
+    }
+
+    // Shadow DOM Observer captures Gemini's real output and renders it in the custom UI
+    let lastHandledMessage = '';
+    function setupShadowObserver() {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      const checkBotResponse = () => {
+        const findMessages = (root) => {
+          if (!root) return [];
+          let list = Array.from(root.querySelectorAll ? root.querySelectorAll('.message-bubble, [role="log"] .bot-message, .df-message-bubble') : []);
+          const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+          for (const item of all) {
+            if (item.shadowRoot) {
+              list = list.concat(findMessages(item.shadowRoot));
+            }
+          }
+          return list;
         };
 
-        if (messenger) {
-          scan(messenger);
-          if (!inputEl && messenger.shadowRoot) scan(messenger.shadowRoot);
-        }
-
-        if (inputEl) {
-          inputEl.value = messageText;
-          inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-          inputEl.dispatchEvent(new Event('change', { bubbles: true }));
-
-          const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
-          inputEl.dispatchEvent(enterEvent);
-
-          // Listen for bot reply from internal shadow DOM observer
-          listenForBotResponse(messenger);
-        } else {
-          // Simulated instant fallback
-          setTimeout(() => {
+        const msgs = findMessages(messenger);
+        if (msgs.length > 0) {
+          const latest = msgs[msgs.length - 1].innerText.trim();
+          if (latest && latest !== lastHandledMessage && !latest.startsWith('[Attached Document') && !latest.startsWith('<event>')) {
+            lastHandledMessage = latest;
             removeTypingIndicator();
-            if (isDocPayload) {
-              appendMessage("Thank you for providing the document!\n\nHere is what I was able to detect:\n• **Demographics & Condition Analyzed**\n\nCould you please confirm the **caller name** and **direct callback phone number**?", false);
-            }
-          }, 1200);
-        }
-      } catch (e) {
-        removeTypingIndicator();
-      }
-    }
-
-    function listenForBotResponse(messenger) {
-      let attempts = 0;
-      const interval = setInterval(() => {
-        attempts++;
-        const botMessages = messenger.shadowRoot ? messenger.shadowRoot.querySelectorAll('.message-bubble, [role="log"] .bot-message') : [];
-        if (botMessages.length > 0) {
-          const lastBot = botMessages[botMessages.length - 1].innerText;
-          if (lastBot && attempts > 2) {
-            clearInterval(interval);
-            removeTypingIndicator();
-            appendMessage(lastBot, false);
+            appendMessage(latest, false);
           }
         }
-        if (attempts > 15) {
-          clearInterval(interval);
-          removeTypingIndicator();
-        }
-      }, 500);
+      };
+
+      setInterval(checkBotResponse, 500);
     }
 
-    // Voice recognition (Speech-to-Text via Web Speech API)
+    // Web Speech API Microphone
     function toggleVoiceInput() {
       if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
         alert("Speech recognition is not supported in this browser. Please use Chrome or Edge.");
@@ -1034,25 +1039,14 @@
       recognition.lang = 'en-US';
       recognition.interimResults = false;
 
-      recognition.onstart = () => {
-        micIcon.style.color = '#ef4444';
-      };
-
+      recognition.onstart = () => { micIcon.style.color = '#ef4444'; };
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        input.value = transcript;
+        input.value = event.results[0][0].transcript;
         micIcon.style.color = '#475569';
         sendMessage();
       };
-
-      recognition.onerror = () => {
-        micIcon.style.color = '#475569';
-      };
-
-      recognition.onend = () => {
-        micIcon.style.color = '#475569';
-      };
-
+      recognition.onerror = () => { micIcon.style.color = '#475569'; };
+      recognition.onend = () => { micIcon.style.color = '#475569'; };
       recognition.start();
     }
   </script>
