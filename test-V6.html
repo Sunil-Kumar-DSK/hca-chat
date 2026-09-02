@@ -46,7 +46,7 @@
       flex-direction: column;
     }
 
-    /* Header */
+    /* Top Navigation Header */
     header {
       background: #ffffff;
       height: 72px;
@@ -392,7 +392,7 @@
       margin-top: 2px;
     }
 
-    /* Floating Chat Messenger Constraints */
+    /* Floating Chat Window */
     chat-messenger {
       position: fixed !important;
       bottom: 24px !important;
@@ -415,29 +415,30 @@
       overflow: hidden !important;
     }
 
-    /* Floating Document Upload Bar */
+    /* Document Upload Bar: Elevated above input box */
     .document-upload-bar {
       position: fixed;
-      bottom: 84px;
-      right: 36px;
-      z-index: 100001;
-      background: rgba(255, 255, 255, 0.98);
-      border: 1px solid #bfdbfe;
-      border-radius: 10px;
-      padding: 6px 12px;
+      bottom: 110px; /* Elevated so it doesn't overlap widget input box */
+      right: 42px;
+      z-index: 100002;
+      background: #ffffff;
+      border: 1.5px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 7px 14px;
       display: none;
       align-items: center;
-      gap: 10px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      gap: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.14);
       font-size: 12.5px;
-      color: #334155;
+      color: #1e293b;
+      font-weight: 500;
     }
 
     .btn-doc-upload {
       background: #eff6ff;
       border: 1.5px solid var(--hca-blue);
       color: var(--hca-blue);
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 6px;
       font-size: 12px;
       font-weight: 700;
@@ -635,7 +636,7 @@
     </div>
   </div>
 
-  <!-- Document Upload Bar Inside Widget -->
+  <!-- Document Upload Floating Bar -->
   <div id="docUploadBar" class="document-upload-bar">
     <span>📄 Have a doc or photo?</span>
     <button class="btn-doc-upload" onclick="triggerFileUpload()">
@@ -644,7 +645,7 @@
     </button>
   </div>
 
-  <!-- Google Chat SDK Registration & Smart Document Extractor -->
+  <!-- Google Chat SDK Registration & Concise Clinical Parser -->
   <script>
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -697,7 +698,7 @@
       document.getElementById('portalFileInput').click();
     }
 
-    // Smart Document Parser: Filters & compacts clinical text to fit within chat widget limits (<800 chars)
+    // Handles Document / PDF Upload and extracts concise clinical fields (< 240 chars)
     async function handleDocumentUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -723,67 +724,71 @@
         } else if (fileExt === 'txt') {
           rawText = await file.text();
         } else {
-          alert("Image uploaded. You can also send images directly in the chat widget.");
+          // If native image, users can attach via the chat input bar
+          alert("Image uploaded. You can also paste or send it in the chat!");
           return;
         }
 
-        // Clean excess whitespace and normalize
+        // Clean whitespaces
         rawText = rawText.replace(/\s+/g, ' ').trim();
 
-        // Extract key clinical phrases or take the first high-density segment under 750 chars
-        let compactedText = compactClinicalText(rawText);
+        // Extract key entities and format into a compact prompt UNDER 240 characters
+        let compactPrompt = extractAndFormatClinicalDetails(rawText);
 
-        if (compactedText.length > 0) {
-          const formattedPrompt = `[Uploaded Doc: ${fileName}]\nTransfer details:\n${compactedText}`;
-          sendTextToChatWidget(formattedPrompt);
+        if (compactPrompt.length > 0) {
+          sendTextToChatWidget(compactPrompt);
         } else {
           alert("No readable text found in document.");
         }
       } catch (err) {
         console.error("Document read error:", err);
-        alert("Error parsing document: " + err.message);
+        alert("Error reading document: " + err.message);
       } finally {
         event.target.value = '';
       }
     }
 
-    // Filters high-value clinical keywords and ensures output stays under 750 characters
-    function compactClinicalText(fullText) {
-      if (fullText.length <= 750) {
-        return fullText;
+    // Regex-based entity extractor: keeps message under 240 chars to avoid character limit errors
+    function extractAndFormatClinicalDetails(fullText) {
+      let parts = [];
+
+      // 1. Patient Name
+      const nameMatch = fullText.match(/(?:patient(?:'s)? name|name|pt)[:\s]+([A-Za-z]+[\s]+[A-Za-z]+)/i);
+      if (nameMatch) parts.push(`Pt: ${nameMatch[1].trim()}`);
+
+      // 2. DOB
+      const dobMatch = fullText.match(/(?:dob|date of birth|birth date)[:\s]+([0-9]{1,4}[-\/\.][0-9]{1,2}[-\/\.][0-9]{1,4})/i);
+      if (dobMatch) parts.push(`DOB: ${dobMatch[1].trim()}`);
+
+      // 3. Gender
+      const genderMatch = fullText.match(/\b(male|female|m|f)\b/i);
+      if (genderMatch) parts.push(`Gender: ${genderMatch[1].toUpperCase()}`);
+
+      // 4. Phone
+      const phoneMatch = fullText.match(/(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}/);
+      if (phoneMatch) parts.push(`Phone: ${phoneMatch[0].trim()}`);
+
+      // 5. Diagnosis / Condition
+      const dxMatch = fullText.match(/(?:diagnosis|dx|condition|presenting)[:\s]+([^.,;\n]{3,35})/i);
+      if (dxMatch) parts.push(`Dx: ${dxMatch[1].trim()}`);
+
+      // 6. Level of Care
+      const careMatch = fullText.match(/\b(ICU|CCU|Med-Surg|Step-Down|Telemetry)\b/i);
+      if (careMatch) parts.push(`Care: ${careMatch[1].toUpperCase()}`);
+
+      let formatted = parts.join(', ');
+
+      // If regex found minimal fields, grab first clean 220 characters
+      if (formatted.length < 20) {
+        formatted = fullText.substring(0, 210).replace(/["'\n\r]/g, ' ');
       }
 
-      const keywords = [
-        "patient", "name", "dob", "birth", "gender", "age", "mrn",
-        "physician", "doctor", "facility", "hospital", "room", "bed",
-        "diagnosis", "reason", "transfer", "condition", "icu", "acuity",
-        "phone", "callback", "specialty", "service", "heparin", "cath"
-      ];
-
-      // Break into sentences/clauses and select relevant clinical lines
-      const sentences = fullText.split(/(?<=[.?!;])\s+/);
-      let selected = [];
-      let currentLen = 0;
-
-      for (let s of sentences) {
-        const lower = s.toLowerCase();
-        if (keywords.some(k => lower.includes(k))) {
-          if (currentLen + s.length < 700) {
-            selected.push(s);
-            currentLen += s.length;
-          }
-        }
-      }
-
-      if (selected.length > 0) {
-        return selected.join(' ') + " [Extracted from Chart]";
-      }
-
-      // Fallback: take clean first 700 chars
-      return fullText.substring(0, 700) + "...";
+      // Hard clamp to 230 characters max
+      const finalMsg = `Uploaded chart: ${formatted}`.substring(0, 230);
+      return finalMsg;
     }
 
-    // Injects the compacted text into the chat widget input and sends it
+    // Injects message into chat widget input and sends it
     function sendTextToChatWidget(text) {
       const messenger = document.querySelector('chat-messenger');
       if (!messenger) return;
