@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-  <!-- Google Chat Messenger SDK & Styles -->
+  <!-- Google Chat Messenger SDK & Themes -->
   <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-default.css" />
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-layout.css" />
@@ -23,10 +23,9 @@
       --hca-accent-orange: #f47920;
       --bg-gradient-start: #004b87;
       --bg-gradient-end: #006eb4;
-      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
       --text-dark: #1e293b;
       --text-muted: #64748b;
-      --border-color: #e2e8f0;
     }
 
     * {
@@ -334,33 +333,58 @@
       font-size: 18px;
     }
 
-    /* Custom Bottom-Right Floating Launcher Pill */
+    /* ----------------------------------------------------
+       CHAT WIDGET FLOATING POPUP STYLES (Fixes bottom stretch)
+       ---------------------------------------------------- */
+    chat-messenger {
+      position: fixed !important;
+      bottom: 24px !important;
+      right: 24px !important;
+      z-index: 10000 !important;
+      --chat-messenger-container-width: 420px;
+      --chat-messenger-container-height: 620px;
+    }
+
+    chat-messenger-container {
+      position: fixed !important;
+      bottom: 24px !important;
+      right: 24px !important;
+      width: 420px !important;
+      max-width: calc(100vw - 32px) !important;
+      height: 620px !important;
+      max-height: calc(100vh - 48px) !important;
+      border-radius: 18px !important;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28) !important;
+      overflow: hidden !important;
+    }
+
+    /* Custom Floating Launcher Pill */
     .custom-launcher-pill {
       position: fixed;
       bottom: 24px;
-      right: 28px;
+      right: 24px;
       background: #ffffff;
       border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 36px;
-      padding: 8px 20px 8px 10px;
+      padding: 8px 18px 8px 10px;
       display: flex;
       align-items: center;
       gap: 12px;
       cursor: pointer;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-      z-index: 9999;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+      z-index: 9998;
       transition: all 0.25s ease;
     }
 
     .custom-launcher-pill:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
     }
 
     .pill-icon-bubble {
       background: var(--hca-blue);
-      width: 42px;
-      height: 42px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -376,14 +400,14 @@
     }
 
     .pill-title {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       color: var(--text-dark);
       line-height: 1.2;
     }
 
     .pill-subtitle {
-      font-size: 11.5px;
+      font-size: 11px;
       color: var(--text-muted);
       font-weight: 500;
       margin-top: 2px;
@@ -423,7 +447,7 @@
     </p>
   </section>
 
-  <!-- Main Grid Container -->
+  <!-- Main Content Grid -->
   <main class="main-container">
     
     <!-- Left Feature Panel -->
@@ -558,7 +582,7 @@
     </div>
   </main>
 
-  <!-- Custom Bottom-Right Floating Launcher Pill -->
+  <!-- Custom Floating Launcher Pill -->
   <div class="custom-launcher-pill" onclick="openChatMessenger()">
     <div class="pill-icon-bubble">
       <span class="material-symbols-outlined" style="font-size: 22px;">chat</span>
@@ -569,7 +593,7 @@
     </div>
   </div>
 
-  <!-- Google Chat SDK Context Integration -->
+  <!-- Google Chat SDK Registration -->
   <script>
     window.addEventListener("chat-messenger-loaded", () => {
       chatSdk.registerContext(
@@ -587,11 +611,22 @@
       const messenger = document.querySelector('chat-messenger');
       if (messenger) {
         messenger.setAttribute('opened', 'true');
+        // Hide pill when chat is opened
+        const pill = document.querySelector('.custom-launcher-pill');
+        if (pill) pill.style.display = 'none';
       }
     }
+
+    // Restore pill when chat is closed
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('chat-messenger-close-button')) {
+        const pill = document.querySelector('.custom-launcher-pill');
+        if (pill) pill.style.display = 'flex';
+      }
+    });
   </script>
 
-  <!-- Google Chat Messenger Component -->
+  <!-- Google Chat Messenger Widget -->
   <chat-messenger url-allowlist="*">
     <chat-messenger-container
       chat-title="PLC Intake Assistant"
