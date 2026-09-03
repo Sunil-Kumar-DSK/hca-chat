@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-  <!-- Client-side Document & Image OCR Parsers -->
+  <!-- Client-side Document Extractors -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -252,7 +252,7 @@
       text-decoration: underline;
     }
 
-    /* Right Preview Card */
+    /* Right Preview Flow Card */
     .queue-card {
       background: #0f172a;
       border-radius: 28px;
@@ -337,7 +337,7 @@
       font-size: 18px;
     }
 
-    /* Google Chat Messenger Sizing & Placement */
+    /* Native Google Chat Messenger Styling */
     chat-messenger {
       position: fixed;
       bottom: 24px;
@@ -385,7 +385,7 @@
     </p>
   </section>
 
-  <!-- Main Container -->
+  <!-- Main Content Grid -->
   <main class="main-container">
     <div class="features-card">
       <div class="features-grid">
@@ -488,7 +488,7 @@
     </div>
   </main>
 
-  <!-- Google Chat Messenger Component with enable-file-upload -->
+  <!-- Google Chat Messenger Component with native file upload -->
   <chat-messenger url-allowlist="*">
     <chat-messenger-container
       chat-title="PLC Intake Assistant"
@@ -511,7 +511,7 @@
     </chat-messenger-container>
   </chat-messenger>
 
-  <!-- Multi-Format Handler for Native Plus (+) Button -->
+  <!-- Google Chat SDK Registration & Safe Multi-Format Upload Interceptor -->
   <script>
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -520,46 +520,58 @@
     let activeDocFileName = '';
 
     window.addEventListener("chat-messenger-loaded", () => {
-      chatSdk.registerContext(
-        chatSdk.prebuilts.ces.createContext({
-          deploymentName: "projects/810617531031/locations/us/apps/c2995ada-2e0b-4258-82f9-ad53e68295b4/deployments/92785478-94ec-47b6-ade2-2f809d3c390f",
-          tokenBroker: {
-            enableTokenBroker: true,
-            enableRecaptcha: false
-          }
-        })
-      );
+      try {
+        chatSdk.registerContext(
+          chatSdk.prebuilts.ces.createContext({
+            deploymentName: "projects/810617531031/locations/us/apps/c2995ada-2e0b-4258-82f9-ad53e68295b4/deployments/92785478-94ec-47b6-ade2-2f809d3c390f",
+            tokenBroker: {
+              enableTokenBroker: true,
+              enableRecaptcha: false
+            }
+          })
+        );
+      } catch (err) {
+        console.error("Chat SDK initialization error:", err);
+      }
 
-      // Intercept internal file inputs to unlock PDF, DOC, DOCX and TXT in the file picker
+      // Periodically ensures PDF/DOC/TXT are unlocked on the plus (+) button and user bubbles show the pill
       setInterval(() => {
-        interceptAndUnlockFileInputs();
-        transformUserBubblesToPill();
+        try {
+          interceptAndUnlockFileInputs();
+          transformUserBubblesToPill();
+        } catch (e) {}
       }, 400);
     });
 
     function openChat() {
-      const messenger = document.querySelector('chat-messenger');
-      if (messenger) {
-        messenger.setAttribute('opened', 'true');
-        if (messenger.shadowRoot) {
-          const btn = messenger.shadowRoot.querySelector('#widget-button, button, [role="button"]');
-          if (btn) btn.click();
+      try {
+        const messenger = document.querySelector('chat-messenger');
+        if (messenger) {
+          messenger.setAttribute('opened', 'true');
+          if (messenger.shadowRoot) {
+            const btn = messenger.shadowRoot.querySelector('#widget-button, button, [role="button"]');
+            if (btn) btn.click();
+          }
         }
+      } catch (e) {
+        console.error("openChat error:", e);
       }
     }
 
     function triggerNativeUpload() {
       openChat();
       setTimeout(() => {
-        const messenger = document.querySelector('chat-messenger');
-        const fileInput = findInternalFileInput(messenger);
-        if (fileInput) {
-          fileInput.click();
-        }
+        try {
+          const messenger = document.querySelector('chat-messenger');
+          const fileInput = findInternalFileInput(messenger);
+          if (fileInput) {
+            fileInput.click();
+          }
+        } catch (e) {}
       }, 300);
     }
 
-    // Unlocks PDF, Word, TXT, Images on the native plus (+) button's file input
+    // Unlocks PDF, Word, TXT, and Images on the native plus (+) button's file input
     function interceptAndUnlockFileInputs() {
       const messenger = document.querySelector('chat-messenger');
       if (!messenger) return;
@@ -568,12 +580,10 @@
         if (!root) return;
         const inputs = root.querySelectorAll ? root.querySelectorAll('input[type="file"]') : [];
         inputs.forEach(input => {
-          // Allow all document formats
           if (!input.dataset.docUnlocked) {
             input.setAttribute('accept', '.pdf,.doc,.docx,.txt,image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document');
             input.dataset.docUnlocked = 'true';
 
-            // Hook onchange to handle PDF, DOCX, TXT, and Images
             input.addEventListener('change', async (e) => {
               const file = e.target.files[0];
               if (!file) return;
@@ -581,7 +591,7 @@
               const fname = file.name;
               const fext = fname.split('.').pop().toLowerCase();
 
-              // If it's a PDF, Word doc, or TXT file, parse it and pass directly to Gemini
+              // If it's a PDF, Word doc, TXT, or image, parse it and pass directly to Gemini
               if (['pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'webp'].includes(fext)) {
                 e.stopImmediatePropagation();
                 await processDocumentAndSend(file);
@@ -642,7 +652,7 @@
 
         rawText = (rawText || '').replace(/\s+/g, ' ').trim();
 
-        // Extract key clinical details under 200 chars to avoid character errors
+        // Extract key clinical details under 190 chars to avoid character errors
         let compactPayload = extractClinicalPayload(activeDocFileName, rawText);
 
         if (compactPayload.length > 0) {
@@ -656,7 +666,7 @@
       }
     }
 
-    // Entity extractor keeping payload concise (< 200 chars)
+    // Entity extractor keeping payload concise (< 190 chars)
     function extractClinicalPayload(fileName, text) {
       if (!text) return '';
       let items = [];
@@ -688,13 +698,13 @@
       let contentStr = items.join(', ');
 
       if (contentStr.length < 8) {
-        contentStr = text.substring(0, 140).replace(/["'\n\r]/g, ' ');
+        contentStr = text.substring(0, 130).replace(/["'\n\r]/g, ' ');
       }
 
-      return `[FILE:${fileName}] ${contentStr}`.substring(0, 195);
+      return `[FILE:${fileName}] ${contentStr}`.substring(0, 190);
     }
 
-    // Sends text directly through the Google Chat Messenger widget
+    // Sends text directly through Google Chat widget
     function sendTextSafely(payload) {
       const messenger = document.querySelector('chat-messenger');
       if (!messenger) return;
