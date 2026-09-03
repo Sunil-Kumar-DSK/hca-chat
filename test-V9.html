@@ -415,7 +415,7 @@
       overflow: hidden !important;
     }
 
-    /* In-Chat Upload Banner directly above chat input */
+    /* Upload Bar directly above chat input */
     .document-upload-bar {
       position: fixed;
       bottom: 110px;
@@ -484,7 +484,7 @@
     </p>
   </section>
 
-  <!-- Main Content Grid -->
+  <!-- Main Grid -->
   <main class="main-container">
     <div class="features-card">
       <div class="features-grid">
@@ -607,7 +607,7 @@
     </button>
   </div>
 
-  <!-- Google Chat SDK Registration & True Backend Routing -->
+  <!-- Google Chat SDK Registration & Unlimited Query Length -->
   <script>
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -626,8 +626,11 @@
         })
       );
 
-      // Transforms the sent payload in the user's bubble into the clean "📎 Uploaded: filename" pill
-      setInterval(transformUserBubblesToPill, 300);
+      // Continuously remove character limits and render file chips
+      setInterval(() => {
+        removeInternalInputLimits();
+        transformUserBubblesToPill();
+      }, 300);
     });
 
     function openChat() {
@@ -640,6 +643,7 @@
       }
       if (pill) pill.style.display = 'none';
       if (docBar) docBar.style.display = 'flex';
+      removeInternalInputLimits();
     }
 
     function closeChat() {
@@ -667,7 +671,7 @@
 
     // Handles Document & Image Upload (PDF, Word, TXT, PNG/JPG OCR)
     async function handleDocumentUpload(event) {
-      const file = event.target.files[0];
+      const file = event.target.files 0 ;
       if (!file) return;
 
       activeDocFileName = file.name;
@@ -702,8 +706,7 @@
         extractedText = (extractedText || '').replace(/\s+/g, ' ').trim();
 
         if (extractedText.length > 0) {
-          // Sent directly to Vertex AI Gemini Agent
-          sendDocumentToGemini(activeDocFileName, extractedText);
+          sendDocumentDirectly(activeDocFileName, extractedText);
         } else {
           alert("Could not extract readable text from this file. Please make sure the file is clear.");
         }
@@ -718,11 +721,34 @@
       }
     }
 
-    // Sends the extracted document content safely to Gemini without triggering widget character caps
-    function sendDocumentToGemini(fileName, rawContent) {
-      // Chunk content if necessary to stay safely within single turn limits (200-240 chars per key item)
-      const cleanSummary = rawContent.substring(0, 220).replace(/["'\n\r]/g, ' ');
-      const payload = `[DOC_UPLOAD:${fileName}] Content: ${cleanSummary}`;
+    // Removes max-length restrictions across Shadow DOM roots
+    function removeInternalInputLimits() {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      const scanAndUnlock = (root) => {
+        if (!root) return;
+        const inputs = root.querySelectorAll ? root.querySelectorAll('textarea, input[type="text"]') : [];
+        inputs.forEach(input => {
+          input.removeAttribute('maxlength');
+          input.setAttribute('maxlength', '100000');
+        });
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        for (const el of all) {
+          if (el.shadowRoot) scanAndUnlock(el.shadowRoot);
+        }
+      };
+
+      scanAndUnlock(messenger);
+      if (messenger.shadowRoot) scanAndUnlock(messenger.shadowRoot);
+    }
+
+    // Sends the document text directly to Gemini
+    function sendDocumentDirectly(fileName, rawContent) {
+      removeInternalInputLimits();
+
+      // Formatted payload passed to Gemini
+      const payload = `[DOC_UPLOAD:${fileName}]\n${rawContent}`;
 
       const messenger = document.querySelector('chat-messenger');
       if (!messenger) return;
@@ -756,11 +782,11 @@
             const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
             found.input.dispatchEvent(enterEvent);
           }
-        }, 200);
+        }, 150);
       }
     }
 
-    // Transforms user message bubble into clean "📎 Uploaded: filename" pill
+    // Renders the clean "📎 Uploaded: filename" pill in place of raw text
     function transformUserBubblesToPill() {
       const messenger = document.querySelector('chat-messenger');
       if (!messenger) return;
@@ -771,8 +797,8 @@
         bubbles.forEach(b => {
           const txt = b.innerText || '';
           if (txt.includes('[DOC_UPLOAD:')) {
-            const match = txt.match(/\[DOC_UPLOAD:([^\]]+)\]/);
-            const fname = match ? match[1] : 'document';
+            const match = txt.match(/\[DOC_UPLOAD:([^\]\n]+)\]/);
+            const fname = match ? match 1  : 'document';
             b.innerHTML = `
               <div style="display:inline-flex; align-items:center; gap:8px; background:#005696; color:#ffffff; padding:7px 14px; border-radius:18px; font-weight:600; font-size:13px; box-shadow: 0 2px 6px rgba(0,86,150,0.3);">
                 <span style="font-size:15px;">📎</span> Uploaded: ${fname}
@@ -792,12 +818,16 @@
     }
   </script>
 
-  <!-- Google Chat Messenger Component -->
-  <chat-messenger url-allowlist="*">
+  <!-- Google Chat Messenger Component with max-query-length="-1" -->
+  <chat-messenger 
+    url-allowlist="*"
+    max-query-length="-1"
+  >
     <chat-messenger-container
       chat-title="PLC Intake Assistant"
       chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
       enable-file-upload
+      max-query-length="-1"
     >
       <chat-reset-session-button
         slot="titlebar-actions"
