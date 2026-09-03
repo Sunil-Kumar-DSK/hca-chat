@@ -47,7 +47,7 @@
       flex-direction: column;
     }
 
-    /* Header */
+    /* Top Navigation Header */
     header {
       background: #ffffff;
       height: 72px;
@@ -136,7 +136,7 @@
       margin: 0 auto;
     }
 
-    /* Main Grid */
+    /* Main Container */
     .main-container {
       max-width: 1240px;
       margin: -60px auto 48px;
@@ -337,85 +337,23 @@
       font-size: 18px;
     }
 
-    /* Bottom-Right Launcher Pill */
-    .custom-launcher-pill {
+    /* Floating Chat Messenger Configuration */
+    chat-messenger {
       position: fixed;
       bottom: 24px;
-      right: 28px;
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      border-radius: 36px;
-      padding: 8px 18px 8px 10px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
-      z-index: 99998;
-      transition: all 0.25s ease;
-    }
-
-    .custom-launcher-pill:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
-    }
-
-    .pill-icon-bubble {
-      background: var(--hca-blue);
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      flex-shrink: 0;
-    }
-
-    .pill-text-block {
-      display: flex;
-      flex-direction: column;
-      text-align: left;
-    }
-
-    .pill-title {
-      font-size: 13.5px;
-      font-weight: 700;
-      color: var(--text-dark);
-      line-height: 1.2;
-    }
-
-    .pill-subtitle {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 500;
-      margin-top: 2px;
-    }
-
-    /* Floating Chat Messenger Window */
-    chat-messenger {
-      position: fixed !important;
-      bottom: 24px !important;
-      right: 24px !important;
-      left: auto !important;
-      top: auto !important;
-      width: 430px !important;
-      height: 640px !important;
-      max-width: calc(100vw - 32px) !important;
-      max-height: calc(100vh - 48px) !important;
-      z-index: 99999 !important;
-      display: none;
+      right: 24px;
+      z-index: 99999;
+      --chat-messenger-container-width: 430px;
+      --chat-messenger-container-height: 640px;
     }
 
     chat-messenger-container {
-      width: 100% !important;
-      height: 100% !important;
-      border-radius: 18px !important;
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28) !important;
-      overflow: hidden !important;
+      border-radius: 18px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
     }
 
-    /* Upload Bar directly above chat input */
+    /* Document Upload Bar directly above chat input */
     .document-upload-bar {
       position: fixed;
       bottom: 110px;
@@ -457,6 +395,10 @@
       .main-container { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
       header { padding: 0 20px; }
+      chat-messenger {
+        --chat-messenger-container-width: calc(100vw - 32px);
+        --chat-messenger-container-height: calc(100vh - 48px);
+      }
     }
   </style>
 </head>
@@ -465,7 +407,7 @@
   <!-- Hidden Multi-Format File Input -->
   <input type="file" id="portalFileInput" accept=".pdf,.doc,.docx,.txt,image/*" style="display:none;" onchange="handleDocumentUpload(event)" />
 
-  <!-- Top Navbar -->
+  <!-- Top Navigation Header -->
   <header>
     <div class="logo-container">
       HCA Healthcare <span class="accent">♦</span> PLC Intake
@@ -484,7 +426,7 @@
     </p>
   </section>
 
-  <!-- Main Grid -->
+  <!-- Main Container -->
   <main class="main-container">
     <div class="features-card">
       <div class="features-grid">
@@ -587,17 +529,6 @@
     </div>
   </main>
 
-  <!-- Bottom-Right Launcher Pill -->
-  <div class="custom-launcher-pill" onclick="openChat()">
-    <div class="pill-icon-bubble">
-      <span class="material-symbols-outlined" style="font-size: 22px;">chat</span>
-    </div>
-    <div class="pill-text-block">
-      <span class="pill-title">PLC Intake Assistant</span>
-      <span class="pill-subtitle">Patient Transfer Requests</span>
-    </div>
-  </div>
-
   <!-- Document Upload Floating Bar -->
   <div id="docUploadBar" class="document-upload-bar">
     <span>📄 Have a doc or photo?</span>
@@ -607,7 +538,7 @@
     </button>
   </div>
 
-  <!-- Google Chat SDK Registration & Unlimited Query Length -->
+  <!-- Google Chat SDK Registration & Safe Document Processing -->
   <script>
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -626,43 +557,35 @@
         })
       );
 
-      // Continuously remove character limits and render file chips
+      // Periodically syncs UI and file upload bar
       setInterval(() => {
-        removeInternalInputLimits();
+        syncUploadBarState();
         transformUserBubblesToPill();
       }, 300);
     });
 
     function openChat() {
       const messenger = document.querySelector('chat-messenger');
-      const pill = document.querySelector('.custom-launcher-pill');
-      const docBar = document.getElementById('docUploadBar');
       if (messenger) {
-        messenger.style.display = 'block';
         messenger.setAttribute('opened', 'true');
+        // If shadow button exists, click it to trigger SDK open state
+        if (messenger.shadowRoot) {
+          const btn = messenger.shadowRoot.querySelector('#widget-button, button, [role="button"]');
+          if (btn) btn.click();
+        }
       }
-      if (pill) pill.style.display = 'none';
-      if (docBar) docBar.style.display = 'flex';
-      removeInternalInputLimits();
-    }
-
-    function closeChat() {
-      const messenger = document.querySelector('chat-messenger');
-      const pill = document.querySelector('.custom-launcher-pill');
       const docBar = document.getElementById('docUploadBar');
-      if (messenger) {
-        messenger.style.display = 'none';
-        messenger.removeAttribute('opened');
-      }
-      if (pill) pill.style.display = 'flex';
-      if (docBar) docBar.style.display = 'none';
+      if (docBar) docBar.style.display = 'flex';
     }
 
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('chat-messenger-close-button')) {
-        closeChat();
-      }
-    });
+    function syncUploadBarState() {
+      const messenger = document.querySelector('chat-messenger');
+      const docBar = document.getElementById('docUploadBar');
+      if (!messenger || !docBar) return;
+
+      const isOpened = messenger.hasAttribute('opened') && messenger.getAttribute('opened') !== 'false';
+      docBar.style.display = isOpened ? 'flex' : 'none';
+    }
 
     function triggerFileUpload() {
       openChat();
@@ -671,12 +594,12 @@
 
     // Handles Document & Image Upload (PDF, Word, TXT, PNG/JPG OCR)
     async function handleDocumentUpload(event) {
-      const file = event.target.files 0 ;
+      const file = event.target.files[0];
       if (!file) return;
 
       activeDocFileName = file.name;
       const fileExt = activeDocFileName.split('.').pop().toLowerCase();
-      let extractedText = '';
+      let rawText = '';
 
       const uploadBtn = document.querySelector('.btn-doc-upload');
       if (uploadBtn) {
@@ -690,25 +613,28 @@
           for (let i = 1; i <= Math.min(pdf.numPages, 4); i++) {
             const page = await pdf.getPage(i);
             const textContent = await page.getTextContent();
-            extractedText += ' ' + textContent.items.map(item => item.str).join(' ');
+            rawText += ' ' + textContent.items.map(item => item.str).join(' ');
           }
         } else if (fileExt === 'docx' || fileExt === 'doc') {
           const arrayBuffer = await file.arrayBuffer();
           const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-          extractedText = result.value;
+          rawText = result.value;
         } else if (fileExt === 'txt') {
-          extractedText = await file.text();
+          rawText = await file.text();
         } else if (['png', 'jpg', 'jpeg', 'webp', 'bmp'].includes(fileExt)) {
           const { data: { text } } = await Tesseract.recognize(file, 'eng');
-          extractedText = text;
+          rawText = text;
         }
 
-        extractedText = (extractedText || '').replace(/\s+/g, ' ').trim();
+        rawText = (rawText || '').replace(/\s+/g, ' ').trim();
 
-        if (extractedText.length > 0) {
-          sendDocumentDirectly(activeDocFileName, extractedText);
+        // Extract key clinical fields into a clean payload under 220 characters
+        let compactPayload = extractClinicalPayload(activeDocFileName, rawText);
+
+        if (compactPayload.length > 0) {
+          sendTextSafely(compactPayload);
         } else {
-          alert("Could not extract readable text from this file. Please make sure the file is clear.");
+          alert("Could not extract readable text from this document. Please ensure the file is clear.");
         }
       } catch (err) {
         console.error("Document read error:", err);
@@ -721,35 +647,47 @@
       }
     }
 
-    // Removes max-length restrictions across Shadow DOM roots
-    function removeInternalInputLimits() {
-      const messenger = document.querySelector('chat-messenger');
-      if (!messenger) return;
+    // Extracts all transfer fields and keeps payload under 220 chars (avoids character limit)
+    function extractClinicalPayload(fileName, text) {
+      if (!text) return '';
+      let items = [];
 
-      const scanAndUnlock = (root) => {
-        if (!root) return;
-        const inputs = root.querySelectorAll ? root.querySelectorAll('textarea, input[type="text"]') : [];
-        inputs.forEach(input => {
-          input.removeAttribute('maxlength');
-          input.setAttribute('maxlength', '100000');
-        });
-        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
-        for (const el of all) {
-          if (el.shadowRoot) scanAndUnlock(el.shadowRoot);
-        }
-      };
+      // 1. Patient Name
+      const nameMatch = text.match(/(?:full\s*name|patient\s*name|pt|^name)[:\s]+([a-zA-Z0-9_-]+(?:\s+[a-zA-Z0-9_-]+)?)/i);
+      if (nameMatch) items.push(`Pt:${nameMatch[1].trim()}`);
 
-      scanAndUnlock(messenger);
-      if (messenger.shadowRoot) scanAndUnlock(messenger.shadowRoot);
+      // 2. Date of Birth (Matches "19 Feb 2000", "02/19/2000", "2000-02-19", etc.)
+      const dobMatch = text.match(/(?:dob|date of birth|birth date|born)[:\s]*([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4}|[0-9]{1,4}[-\/\.][0-9]{1,2}[-\/\.][0-9]{1,4})/i);
+      if (dobMatch) items.push(`DOB:${dobMatch[1].trim()}`);
+
+      // 3. Gender
+      const genderMatch = text.match(/\b(male|female|gender:\s*(?:m|f|male|female))\b/i);
+      if (genderMatch) items.push(`Gender:${genderMatch[1].toUpperCase()}`);
+
+      // 4. Phone / Callback
+      const phoneMatch = text.match(/(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}/);
+      if (phoneMatch) items.push(`Phone:${phoneMatch[0].trim()}`);
+
+      // 5. Diagnosis / Condition
+      const dxMatch = text.match(/(?:diagnosis|dx|condition|presenting)[:\s]+([^.,;\n]{3,40})/i);
+      if (dxMatch) items.push(`Dx:${dxMatch[1].trim()}`);
+
+      // 6. Care Level
+      const careMatch = text.match(/\b(ICU|CCU|Med-Surg|Step-Down|Telemetry)\b/i);
+      if (careMatch) items.push(`Care:${careMatch[1].toUpperCase()}`);
+
+      let contentStr = items.join(', ');
+
+      // If regex found minimal fields, take clean leading segment under 160 chars
+      if (contentStr.length < 10) {
+        contentStr = text.substring(0, 150).replace(/["'\n\r]/g, ' ');
+      }
+
+      return `[FILE:${fileName}] ${contentStr}`.substring(0, 220);
     }
 
-    // Sends the document text directly to Gemini
-    function sendDocumentDirectly(fileName, rawContent) {
-      removeInternalInputLimits();
-
-      // Formatted payload passed to Gemini
-      const payload = `[DOC_UPLOAD:${fileName}]\n${rawContent}`;
-
+    // Sends text directly through the Google Chat Messenger widget
+    function sendTextSafely(payload) {
       const messenger = document.querySelector('chat-messenger');
       if (!messenger) return;
 
@@ -769,7 +707,6 @@
 
       const found = scanForInput(messenger) || (messenger.shadowRoot ? scanForInput(messenger.shadowRoot) : null);
       if (found && found.input) {
-        found.input.removeAttribute('maxlength');
         found.input.value = payload;
         found.input.dispatchEvent(new Event('input', { bubbles: true }));
         found.input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -786,7 +723,7 @@
       }
     }
 
-    // Renders the clean "📎 Uploaded: filename" pill in place of raw text
+    // Transforms user message bubble into clean "📎 Uploaded: filename" pill
     function transformUserBubblesToPill() {
       const messenger = document.querySelector('chat-messenger');
       if (!messenger) return;
@@ -796,9 +733,9 @@
         const bubbles = root.querySelectorAll ? root.querySelectorAll('.message.user-message, .df-user-message, [role="log"] > div, .message-bubble, .user-bubble') : [];
         bubbles.forEach(b => {
           const txt = b.innerText || '';
-          if (txt.includes('[DOC_UPLOAD:')) {
-            const match = txt.match(/\[DOC_UPLOAD:([^\]\n]+)\]/);
-            const fname = match ? match 1  : 'document';
+          if (txt.includes('[FILE:')) {
+            const match = txt.match(/\[FILE:([^\]]+)\]/);
+            const fname = match ? match[1] : 'document';
             b.innerHTML = `
               <div style="display:inline-flex; align-items:center; gap:8px; background:#005696; color:#ffffff; padding:7px 14px; border-radius:18px; font-weight:600; font-size:13px; box-shadow: 0 2px 6px rgba(0,86,150,0.3);">
                 <span style="font-size:15px;">📎</span> Uploaded: ${fname}
@@ -818,16 +755,12 @@
     }
   </script>
 
-  <!-- Google Chat Messenger Component with max-query-length="-1" -->
-  <chat-messenger 
-    url-allowlist="*"
-    max-query-length="-1"
-  >
+  <!-- Google Chat Messenger Component -->
+  <chat-messenger url-allowlist="*">
     <chat-messenger-container
       chat-title="PLC Intake Assistant"
       chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
       enable-file-upload
-      max-query-length="-1"
     >
       <chat-reset-session-button
         slot="titlebar-actions"
