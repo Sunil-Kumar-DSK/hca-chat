@@ -5,23 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HCA Healthcare • PLC Intake</title>
 
-  <!-- Font Awesome Icons & Google Fonts -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google Fonts & Material Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-  <!-- PDF.js for PDF text extraction -->
+  <!-- Client-side Document & Image OCR Parsers -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  </script>
-
-  <!-- Mammoth.js for Word (.docx) extraction -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
-
-  <!-- Tesseract.js for Image OCR (.png, .jpg, .jpeg) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <!-- Google Chat Messenger SDK & Default Styles -->
+  <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
+  <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-default.css" />
+  <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-layout.css" />
 
   <style>
     :root {
@@ -35,7 +33,12 @@
       --text-muted: #64748b;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
     body {
       background-color: #f8fafc;
@@ -44,7 +47,7 @@
       flex-direction: column;
     }
 
-    /* Top Navigation Header */
+    /* Header */
     header {
       background: #ffffff;
       height: 72px;
@@ -133,7 +136,7 @@
       margin: 0 auto;
     }
 
-    /* Main Container */
+    /* Main Grid */
     .main-container {
       max-width: 1240px;
       margin: -60px auto 48px;
@@ -177,7 +180,6 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      font-size: 18px;
     }
 
     .feature-text {
@@ -317,7 +319,7 @@
 
     .step-icon {
       color: var(--hca-blue);
-      font-size: 18px;
+      font-size: 20px;
     }
 
     .step-label {
@@ -332,244 +334,123 @@
 
     .check-icon {
       color: var(--hca-blue);
-      font-size: 16px;
+      font-size: 18px;
     }
 
     /* Bottom-Right Launcher Pill */
-    .chat-launcher-pill {
+    .custom-launcher-pill {
       position: fixed;
       bottom: 24px;
-      right: 24px;
+      right: 28px;
       background: #ffffff;
-      border: 1px solid #cbd5e1;
+      border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 36px;
       padding: 8px 18px 8px 10px;
       display: flex;
       align-items: center;
       gap: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
       cursor: pointer;
-      z-index: 999998;
-      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+      z-index: 99998;
+      transition: all 0.25s ease;
     }
-    .chat-launcher-pill:hover {
+
+    .custom-launcher-pill:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
     }
-    .launcher-circle {
-      width: 42px;
-      height: 42px;
+
+    .pill-icon-bubble {
       background: var(--hca-blue);
-      color: #ffffff;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-    }
-
-    /* ----------------------------------------------------
-       CUSTOM CHAT WINDOW
-       ---------------------------------------------------- */
-    #assistant-chat-widget {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 440px;
-      height: 640px;
-      max-width: calc(100vw - 32px);
-      max-height: calc(100vh - 48px);
-      background: #ffffff;
-      border-radius: 18px;
-      box-shadow: 0 16px 48px rgba(0,0,0,0.25);
-      border: 1px solid #e2e8f0;
-      display: none;
-      flex-direction: column;
-      overflow: hidden;
-      z-index: 999999;
-      animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes popIn {
-      from { opacity: 0; transform: translateY(12px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .widget-header {
-      background: #ffffff;
-      padding: 14px 18px;
-      border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .widget-title {
-      font-size: 15.5px;
-      font-weight: 700;
-      color: var(--hca-navy);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .widget-header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .btn-header-action {
-      background: none;
-      border: none;
-      color: #64748b;
-      cursor: pointer;
-      font-size: 16px;
-      padding: 4px 6px;
-      border-radius: 4px;
-      transition: background 0.2s;
-    }
-    .btn-header-action:hover {
-      background: #f1f5f9;
-      color: var(--hca-navy);
-    }
-
-    .chat-scroll-area {
-      flex: 1;
-      padding: 18px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background: #fafcff;
-    }
-    .chat-bubble {
-      max-width: 88%;
-      padding: 12px 16px;
-      border-radius: 16px;
-      font-size: 13.5px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-    .chat-bubble.bot {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      color: #1e293b;
-      align-self: flex-start;
-      border-bottom-left-radius: 4px;
-    }
-    .chat-bubble.bot strong {
-      color: #0f172a;
-    }
-    .chat-bubble.user {
-      background: var(--hca-blue);
       color: #ffffff;
-      align-self: flex-end;
-      border-bottom-right-radius: 4px;
-    }
-    .chat-bubble.status {
-      font-size: 12px;
-      font-style: italic;
-      color: #64748b;
-      align-self: flex-start;
-      padding: 4px 8px;
+      flex-shrink: 0;
     }
 
-    /* In-Chat Upload Drawer */
-    .doc-upload-drawer {
-      padding: 9px 14px;
-      background: #f0f7fc;
-      border-top: 1px solid #e2e8f0;
+    .pill-text-block {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .pill-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1.2;
+    }
+
+    .pill-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    /* Floating Chat Messenger Window */
+    chat-messenger {
+      position: fixed !important;
+      bottom: 24px !important;
+      right: 24px !important;
+      left: auto !important;
+      top: auto !important;
+      width: 430px !important;
+      height: 640px !important;
+      max-width: calc(100vw - 32px) !important;
+      max-height: calc(100vh - 48px) !important;
+      z-index: 99999 !important;
+      display: none;
+    }
+
+    chat-messenger-container {
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 18px !important;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28) !important;
+      overflow: hidden !important;
+    }
+
+    /* In-Chat Upload Banner directly above chat input */
+    .document-upload-bar {
+      position: fixed;
+      bottom: 110px;
+      right: 42px;
+      z-index: 100002;
+      background: #ffffff;
+      border: 1.5px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 7px 14px;
+      display: none;
       align-items: center;
+      gap: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.14);
       font-size: 12.5px;
-      color: var(--hca-navy);
+      color: #1e293b;
       font-weight: 500;
     }
-    .btn-upload-trigger {
-      background: #ffffff;
+
+    .btn-doc-upload {
+      background: #eff6ff;
       border: 1.5px solid var(--hca-blue);
       color: var(--hca-blue);
-      border-radius: 6px;
       padding: 5px 12px;
+      border-radius: 6px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       transition: all 0.2s;
     }
-    .btn-upload-trigger:hover {
+    .btn-doc-upload:hover {
       background: var(--hca-blue);
       color: #ffffff;
-    }
-
-    /* Message Input Bar */
-    .chat-input-controls {
-      padding: 10px 14px 14px;
-      background: #ffffff;
-      border-top: 1px solid #e2e8f0;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .chat-input-controls input {
-      flex: 1;
-      padding: 9px 16px;
-      border: 1px solid #cbd5e1;
-      border-radius: 24px;
-      font-size: 13.5px;
-      outline: none;
-    }
-    .chat-input-controls input:focus { border-color: var(--hca-blue); }
-    
-    /* Microphone Button */
-    .btn-mic-toggle {
-      width: 38px;
-      height: 38px;
-      background: #f1f5f9;
-      color: #475569;
-      border: 1px solid #cbd5e1;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.2s ease-in-out;
-    }
-    .btn-mic-toggle:hover {
-      background: #e2e8f0;
-      color: var(--hca-navy);
-    }
-    .btn-mic-toggle.recording {
-      background: #ef4444 !important;
-      color: #ffffff !important;
-      border-color: #dc2626 !important;
-      animation: micPulse 1.2s infinite;
-    }
-
-    @keyframes micPulse {
-      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    }
-
-    .btn-submit-message {
-      width: 38px;
-      height: 38px;
-      background: var(--hca-blue);
-      color: #ffffff;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .btn-submit-message:hover {
-      background: #004578;
     }
 
     @media (max-width: 992px) {
@@ -582,21 +463,15 @@
 <body>
 
   <!-- Hidden Multi-Format File Input -->
-  <input 
-    type="file" 
-    id="portalFileInput" 
-    accept=".pdf,.txt,.doc,.docx,.png,.jpg,.jpeg,.webp,image/*,text/plain" 
-    style="display: none;" 
-    onchange="handleFileUpload(event)"
-  />
+  <input type="file" id="portalFileInput" accept=".pdf,.doc,.docx,.txt,image/*" style="display:none;" onchange="handleDocumentUpload(event)" />
 
-  <!-- Top Navigation Header -->
+  <!-- Top Navbar -->
   <header>
     <div class="logo-container">
       HCA Healthcare <span class="accent">♦</span> PLC Intake
     </div>
     <div class="nav-actions">
-      <button class="btn-nav-primary" onclick="toggleChat(true)">New Transfer Request</button>
+      <button class="btn-nav-primary" onclick="openChat()">New Transfer Request</button>
       <button class="btn-nav-outline" onclick="window.open('https://hcahealthcare.com', '_blank')">PLC Portal</button>
     </div>
   </header>
@@ -609,42 +484,44 @@
     </p>
   </section>
 
-  <!-- Main Container -->
+  <!-- Main Content Grid -->
   <main class="main-container">
     <div class="features-card">
       <div class="features-grid">
         <div class="feature-item">
-          <div class="feature-icon-box"><i class="fa-regular fa-file-lines"></i></div>
+          <div class="feature-icon-box"><span class="material-symbols-outlined">description</span></div>
           <div class="feature-text">Upload Face Sheets, PDF Charts, & Notes for Auto-Extraction</div>
         </div>
         <div class="feature-item">
-          <div class="feature-icon-box"><i class="fa-solid fa-hospital"></i></div>
+          <div class="feature-icon-box"><span class="material-symbols-outlined">local_hospital</span></div>
           <div class="feature-text">Submit Urgent Care, ED, or Inpatient Transfer Requests</div>
         </div>
         <div class="feature-item">
-          <div class="feature-icon-box"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="feature-icon-box"><span class="material-symbols-outlined">verified_user</span></div>
           <div class="feature-text">EMTALA Statements & Bed Requirement Documentation</div>
         </div>
         <div class="feature-item">
-          <div class="feature-icon-box"><i class="fa-solid fa-stethoscope"></i></div>
+          <div class="feature-icon-box"><span class="material-symbols-outlined">stethoscope</span></div>
           <div class="feature-text">Specialty & Level of Care Matching Coordination</div>
         </div>
         <div class="feature-item">
-          <div class="feature-icon-box"><i class="fa-solid fa-clipboard-check"></i></div>
+          <div class="feature-icon-box"><span class="material-symbols-outlined">assignment_turned_in</span></div>
           <div class="feature-text">Immediate Transfer Confirmation Tracking Reference</div>
         </div>
         <div class="feature-item">
-          <div class="feature-icon-box"><i class="fa-solid fa-headset"></i></div>
+          <div class="feature-icon-box"><span class="material-symbols-outlined">headset_mic</span></div>
           <div class="feature-text">Direct Hand-off to Placement Coordinators</div>
         </div>
       </div>
 
       <div class="action-buttons-group">
-        <button class="btn-hero-primary" onclick="toggleChat(true)">
-          <i class="fa-regular fa-comment-dots" style="margin-right: 6px;"></i> Start Intake Assistant
+        <button class="btn-hero-primary" onclick="openChat()">
+          <span class="material-symbols-outlined" style="font-size: 20px;">chat</span>
+          Start Intake Assistant
         </button>
         <button class="btn-hero-dashed" onclick="triggerFileUpload()">
-          <i class="fa-solid fa-file-arrow-up" style="margin-right: 6px;"></i> Upload Face Sheet / Transfer PDF
+          <span class="material-symbols-outlined" style="font-size: 20px;">upload_file</span>
+          Upload Face Sheet / Transfer PDF
         </button>
       </div>
 
@@ -665,492 +542,278 @@
 
         <div class="step-item">
           <div class="step-left">
-            <i class="fa-regular fa-file-pdf step-icon"></i>
+            <span class="material-symbols-outlined step-icon">picture_as_pdf</span>
             <div>
               <div class="step-label">Document Extraction</div>
-              <div class="step-sublabel">PDF & Image OCR Parsing</div>
+              <div class="step-sublabel">PDF & Word Parsing</div>
             </div>
           </div>
-          <i class="fa-solid fa-check check-icon"></i>
+          <span class="material-symbols-outlined check-icon">check</span>
         </div>
 
         <div class="step-item">
           <div class="step-left">
-            <i class="fa-regular fa-user step-icon"></i>
+            <span class="material-symbols-outlined step-icon">person</span>
             <div>
               <div class="step-label">Patient Demographics</div>
               <div class="step-sublabel">Name, DOB, Gender</div>
             </div>
           </div>
-          <i class="fa-solid fa-check check-icon"></i>
+          <span class="material-symbols-outlined check-icon">check</span>
         </div>
 
         <div class="step-item">
           <div class="step-left">
-            <i class="fa-solid fa-bed-pulse step-icon"></i>
+            <span class="material-symbols-outlined step-icon">single_bed</span>
             <div>
               <div class="step-label">Level of Care</div>
               <div class="step-sublabel">ICU / Step-Down / Med-Surg</div>
             </div>
           </div>
-          <i class="fa-solid fa-check check-icon"></i>
+          <span class="material-symbols-outlined check-icon">check</span>
         </div>
 
         <div class="step-item">
           <div class="step-left">
-            <i class="fa-solid fa-phone-volume step-icon"></i>
+            <span class="material-symbols-outlined step-icon">phone_in_talk</span>
             <div>
               <div class="step-label">Physician Contact</div>
               <div class="step-sublabel">Referring MD Direct Line</div>
             </div>
           </div>
-          <i class="fa-solid fa-check check-icon"></i>
+          <span class="material-symbols-outlined check-icon">check</span>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- Bottom-Right Launcher Button -->
-  <div class="chat-launcher-pill" id="launcher-pill" onclick="toggleChat(true)">
-    <div class="launcher-circle"><i class="fa-regular fa-comment-dots"></i></div>
-    <div>
-      <div style="font-size: 13.5px; font-weight: 700; color: var(--text-dark);">PLC Intake Assistant</div>
-      <div style="font-size: 11px; color: var(--text-muted);">Transfer Requests & Uploads</div>
+  <!-- Bottom-Right Launcher Pill -->
+  <div class="custom-launcher-pill" onclick="openChat()">
+    <div class="pill-icon-bubble">
+      <span class="material-symbols-outlined" style="font-size: 22px;">chat</span>
+    </div>
+    <div class="pill-text-block">
+      <span class="pill-title">PLC Intake Assistant</span>
+      <span class="pill-subtitle">Patient Transfer Requests</span>
     </div>
   </div>
 
-  <!-- Dedicated Chat Window -->
-  <div id="assistant-chat-widget">
-    <div class="widget-header">
-      <div class="widget-title">
-        <i class="fa-solid fa-robot" style="color: var(--hca-blue);"></i> PLC Intake Assistant
-      </div>
-      <div class="widget-header-actions">
-        <button type="button" class="btn-header-action" title="Start New Chat" onclick="startNewChat()">
-          <i class="fa-solid fa-rotate-right"></i>
-        </button>
-        <button type="button" class="btn-header-action" title="Close" onclick="toggleChat(false)">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- Scrollable Messages Area -->
-    <div class="chat-scroll-area" id="chat-messages-container">
-      <div class="chat-bubble bot">Hello! I'm the HCA Patient Logistics Center (PLC) Intake Assistant. I can help you record a patient transfer request.
-
-To start, please provide the patient's name and date of birth, or upload a face sheet/transfer document!</div>
-    </div>
-
-    <!-- Upload Drawer -->
-    <div class="doc-upload-drawer">
-      <span>📄 Have a doc or photo?</span>
-      <button type="button" class="btn-upload-trigger" onclick="document.getElementById('portalFileInput').click()">
-        <i class="fa-solid fa-paperclip"></i> Upload PDF / Word / Image
-      </button>
-    </div>
-
-    <!-- Input Box & Microphone Controls -->
-    <form class="chat-input-controls" onsubmit="event.preventDefault(); submitManualText();">
-      <input type="text" id="user-input-box" placeholder="Type or click mic to speak..." autocomplete="off">
-      <button type="button" class="btn-mic-toggle" id="btn-mic" title="Click to Speak" onclick="toggleVoiceRecording()">
-        <i class="fa-solid fa-microphone" id="mic-icon"></i>
-      </button>
-      <button type="submit" class="btn-submit-message" title="Send">
-        <i class="fa-solid fa-paper-plane"></i>
-      </button>
-    </form>
+  <!-- Document Upload Floating Bar -->
+  <div id="docUploadBar" class="document-upload-bar">
+    <span>📄 Have a doc or photo?</span>
+    <button class="btn-doc-upload" onclick="triggerFileUpload()">
+      <span class="material-symbols-outlined" style="font-size: 15px;">attach_file</span>
+      Upload PDF / Word / Image
+    </button>
   </div>
 
-  <!-- COMPLETE STATE & CLINICAL EXTRACTION ENGINE -->
+  <!-- Google Chat SDK Registration & True Backend Routing -->
   <script>
-    // 18 Transfer Intake State Variables
-    let collectedState = {
-      caller_name: null,
-      caller_callback_info: null,
-      patient_first_name: null,
-      patient_last_name: null,
-      patient_gender: null,
-      patient_dob: null,
-      diagnosis_presenting_condition: null,
-      referring_physician: null,
-      referring_physician_phone: null,
-      referring_facility: null,
-      patient_current_location: null,
-      reason_for_transfer: null,
-      requested_specialty: null,
-      requested_level_of_care: null,
-      clinical_capabilities_needed: null,
-      capacity_bed_concerns: null,
-      other_transfer_details: null,
-      emtala_transfer_statement: null,
-      accepting_physician: null,
-      ambiguousNames: []
-    };
-
-    function toggleChat(show) {
-      document.getElementById('assistant-chat-widget').style.display = show ? 'flex' : 'none';
-      document.getElementById('launcher-pill').style.display = show ? 'none' : 'flex';
-      if (show) document.getElementById('user-input-box').focus();
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
+    let activeDocFileName = '';
+
+    window.addEventListener("chat-messenger-loaded", () => {
+      chatSdk.registerContext(
+        chatSdk.prebuilts.ces.createContext({
+          deploymentName: "projects/810617531031/locations/us/apps/c2995ada-2e0b-4258-82f9-ad53e68295b4/deployments/92785478-94ec-47b6-ade2-2f809d3c390f",
+          tokenBroker: {
+            enableTokenBroker: true,
+            enableRecaptcha: false
+          }
+        })
+      );
+
+      // Transforms the sent payload in the user's bubble into the clean "📎 Uploaded: filename" pill
+      setInterval(transformUserBubblesToPill, 300);
+    });
+
+    function openChat() {
+      const messenger = document.querySelector('chat-messenger');
+      const pill = document.querySelector('.custom-launcher-pill');
+      const docBar = document.getElementById('docUploadBar');
+      if (messenger) {
+        messenger.style.display = 'block';
+        messenger.setAttribute('opened', 'true');
+      }
+      if (pill) pill.style.display = 'none';
+      if (docBar) docBar.style.display = 'flex';
+    }
+
+    function closeChat() {
+      const messenger = document.querySelector('chat-messenger');
+      const pill = document.querySelector('.custom-launcher-pill');
+      const docBar = document.getElementById('docUploadBar');
+      if (messenger) {
+        messenger.style.display = 'none';
+        messenger.removeAttribute('opened');
+      }
+      if (pill) pill.style.display = 'flex';
+      if (docBar) docBar.style.display = 'none';
+    }
+
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('chat-messenger-close-button')) {
+        closeChat();
+      }
+    });
+
     function triggerFileUpload() {
-      toggleChat(true);
+      openChat();
       document.getElementById('portalFileInput').click();
     }
 
-    function appendMessage(text, role = "bot") {
-      const container = document.getElementById('chat-messages-container');
-      const bubble = document.createElement('div');
-      bubble.className = "chat-bubble " + role;
-      bubble.innerText = text;
-      container.appendChild(bubble);
-      container.scrollTop = container.scrollHeight;
-    }
-
-    function startNewChat() {
-      collectedState = {
-        caller_name: null, caller_callback_info: null, patient_first_name: null,
-        patient_last_name: null, patient_gender: null, patient_dob: null,
-        diagnosis_presenting_condition: null, referring_physician: null,
-        referring_physician_phone: null, referring_facility: null,
-        patient_current_location: null, reason_for_transfer: null,
-        requested_specialty: null, requested_level_of_care: null,
-        clinical_capabilities_needed: null, capacity_bed_concerns: null,
-        other_transfer_details: null, emtala_transfer_statement: null,
-        accepting_physician: null, ambiguousNames: []
-      };
-      const container = document.getElementById('chat-messages-container');
-      container.innerHTML = `<div class="chat-bubble bot">Started a new conversation! I will help you record a patient transfer request.\n\nPlease provide the patient's details, speak via mic, or upload a document/face sheet.</div>`;
-    }
-
-    // Comprehensive Client-side File Extractor (PDF, Word, OCR)
-    async function extractDocumentText(file) {
-      const fileName = file.name.toLowerCase();
-
-      // 1. PDF Extractor
-      if (fileName.endsWith('.pdf')) {
-        const buffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer), disableFontFace: true }).promise;
-        let fullText = "";
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const content = await page.getTextContent();
-          fullText += content.items.map(it => it.str).join(" ") + "\n";
-        }
-        return fullText;
-      }
-
-      // 2. Word (.docx) Extractor
-      if (fileName.endsWith('.docx')) {
-        const arrayBuffer = await file.arrayBuffer();
-        const result = await mammoth.extractRawText({ arrayBuffer });
-        return result.value || "";
-      }
-
-      // 3. Image OCR (.png, .jpg, .jpeg, .webp)
-      if (file.type.startsWith('image/') || fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.webp')) {
-        const { data: { text } } = await Tesseract.recognize(file, 'eng');
-        return text || "";
-      }
-
-      // 4. Plain text
-      return await file.text();
-    }
-
-    function cleanVal(str) {
-      if (!str) return "";
-      return str.trim().replace(/[.,;:]+$/, '');
-    }
-
-    // Comprehensive Entity & Clinical Extraction
-    function extractAllFields(content) {
-      const lines = content.split('\n');
-
-      // 1. Date of Birth (Captures "19 Feb 2000", "02/19/2000", "2000-02-19", etc.)
-      const dobMatch = content.match(/(?:date of birth|dob|born on|birth date|birth)[:\s]*([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4}|[0-9]{1,4}[-\/\.][0-9]{1,2}[-\/\.][0-9]{1,4})/i);
-      if (dobMatch && !collectedState.patient_dob) {
-        collectedState.patient_dob = cleanVal(dobMatch[1]);
-      }
-
-      // 2. Gender
-      const genderMatch = content.match(/\b(male|female|gender:\s*(?:m|f|male|female))\b/i);
-      if (genderMatch && !collectedState.patient_gender) {
-        collectedState.patient_gender = genderMatch[1].toLowerCase().includes('female') || genderMatch[1].toLowerCase() === 'f' ? 'Female' : 'Male';
-      }
-
-      // 3. Phone numbers (10 digits)
-      const phoneMatches = content.match(/(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}/g);
-      if (phoneMatches && phoneMatches.length > 0) {
-        if (!collectedState.caller_callback_info) {
-          collectedState.caller_callback_info = cleanVal(phoneMatches[0]);
-        }
-        if (phoneMatches.length > 1 && !collectedState.referring_physician_phone) {
-          collectedState.referring_physician_phone = cleanVal(phoneMatches[1]);
-        }
-      }
-
-      // 4. Policy / Account ID or Callback if present
-      const polMatch = content.match(/(?:policy|account\s*id|policy\s*id|member\s*id)[:\s]*([0-9a-zA-Z-]+)/i);
-      if (polMatch && !collectedState.caller_callback_info) {
-        collectedState.caller_callback_info = cleanVal(polMatch[1]);
-      }
-
-      // 5. Patient Full Name / Names Detection
-      const foundNames = [];
-      for (let rawLine of lines) {
-        const line = rawLine.trim();
-        if (!line) continue;
-
-        const nameKeyMatch = line.match(/(?:full\s*name|patient\s*name|^name|pt)[:\s]+([a-zA-Z0-9_-]+(?:\s+[a-zA-Z0-9_-]+)?)/i);
-        if (nameKeyMatch) {
-          const cand = cleanVal(nameKeyMatch[1]);
-          if (cand && !["hca", "assistant", "virtual", "portal", "system"].some(t => cand.toLowerCase().includes(t)) && !foundNames.includes(cand)) {
-            foundNames.push(cand);
-          }
-        }
-      }
-
-      if (foundNames.length > 0) {
-        const selected = foundNames[0];
-        const parts = selected.split(/\s+/);
-        collectedState.patient_first_name = parts[0];
-        if (parts.length > 1) {
-          collectedState.patient_last_name = parts.slice(1).join(' ');
-        }
-      }
-
-      // 6. Diagnosis & Clinical details
-      const dxMatch = content.match(/(?:diagnosis|dx|condition|presenting)[:\s]+([^.,;\n]{3,60})/i);
-      if (dxMatch && !collectedState.diagnosis_presenting_condition) {
-        collectedState.diagnosis_presenting_condition = cleanVal(dxMatch[1]);
-      }
-
-      // 7. Referring Facility & Location
-      const facMatch = content.match(/(?:facility|hospital|sending from|location)[:\s]+([^.,;\n]{3,60})/i);
-      if (facMatch && !collectedState.referring_facility) {
-        collectedState.referring_facility = cleanVal(facMatch[1]);
-      }
-
-      // 8. Referring Physician
-      const mdMatch = content.match(/(?:physician|referring md|doctor|dr\.)[:\s]+([A-Za-z]+[\s]+[A-Za-z]+)/i);
-      if (mdMatch && !collectedState.referring_physician) {
-        collectedState.referring_physician = cleanVal(mdMatch[1]);
-      }
-
-      // 9. Level of Care
-      const careMatch = content.match(/\b(ICU|CCU|Med-Surg|Step-Down|Telemetry|Inpatient)\b/i);
-      if (careMatch && !collectedState.requested_level_of_care) {
-        collectedState.requested_level_of_care = careMatch[1].toUpperCase();
-      }
-    }
-
-    // Responsive State Engine
-    function processInputAndGenerateReply(inputContent, isDoc = false) {
-      const textLower = inputContent.trim().toLowerCase();
-
-      // Check for confirmation
-      if (textLower === "yes" || textLower === "yes that's correct" || textLower === "confirm" || textLower === "all correct") {
-        const refId = "PLC-" + Math.random().toString(16).substr(2, 8).toUpperCase();
-        return `✅ **Transfer Request Recorded Successfully**\n\n- **Reference Number:** \`${refId}\`\n\nThe Patient Logistics Center (PLC) team has received your request and will follow up on placement shortly.`;
-      }
-
-      // Extract all available fields from the input / document
-      extractAllFields(inputContent);
-
-      // Check if user manually typed single fields
-      if (!isDoc) {
-        const nameInput = inputContent.match(/^[a-zA-Z]+\s+[a-zA-Z]+$/);
-        if (nameInput && !collectedState.patient_first_name) {
-          const p = inputContent.split(' ');
-          collectedState.patient_first_name = p[0];
-          collectedState.patient_last_name = p[1];
-        }
-      }
-
-      // Construct Response
-      let response = isDoc 
-        ? "Thank you for providing the document / image!\n\nHere is what I was able to detect:\n" 
-        : "Thank you! Here is the updated transfer record:\n";
-
-      let hasDetected = false;
-      if (collectedState.patient_first_name) {
-        response += `• **Patient Name:** ${collectedState.patient_first_name} ${collectedState.patient_last_name || ''}\n`;
-        hasDetected = true;
-      }
-      if (collectedState.patient_dob) {
-        response += `• **Date of Birth:** ${collectedState.patient_dob}\n`;
-        hasDetected = true;
-      }
-      if (collectedState.patient_gender) {
-        response += `• **Gender:** ${collectedState.patient_gender}\n`;
-        hasDetected = true;
-      }
-      if (collectedState.caller_callback_info) {
-        response += `• **Callback Number:** ${collectedState.caller_callback_info}\n`;
-        hasDetected = true;
-      }
-      if (collectedState.referring_facility) {
-        response += `• **Sending Facility:** ${collectedState.referring_facility}\n`;
-        hasDetected = true;
-      }
-      if (collectedState.referring_physician) {
-        response += `• **Referring Physician:** ${collectedState.referring_physician}\n`;
-        hasDetected = true;
-      }
-      if (collectedState.diagnosis_presenting_condition) {
-        response += `• **Diagnosis / Condition:** ${collectedState.diagnosis_presenting_condition}\n`;
-        hasDetected = true;
-      }
-      if (collectedState.requested_level_of_care) {
-        response += `• **Level of Care:** ${collectedState.requested_level_of_care}\n`;
-        hasDetected = true;
-      }
-
-      if (!hasDetected && isDoc) {
-        response += `• Document analyzed.\n`;
-      }
-
-      // Identify missing mandatory fields
-      const missingList = [];
-      if (!collectedState.patient_first_name) missingList.push("Patient Full Name");
-      if (!collectedState.patient_dob) missingList.push("Patient Date of Birth");
-      if (!collectedState.patient_gender) missingList.push("Patient Gender");
-      if (!collectedState.caller_callback_info) missingList.push("Caller Name & Callback Number");
-      if (!collectedState.referring_facility) missingList.push("Sending Facility & Unit Location");
-      if (!collectedState.referring_physician) missingList.push("Referring Physician & Contact");
-      if (!collectedState.diagnosis_presenting_condition) missingList.push("Diagnosis / Presenting Condition");
-      if (!collectedState.requested_level_of_care) missingList.push("Requested Specialty & Level of Care (e.g., ICU, Med-Surg)");
-
-      if (missingList.length > 0) {
-        response += `\nTo complete the transfer intake, please provide the remaining details:\n• ` + missingList.slice(0, 3).join("\n• ");
-      } else {
-        response += `\nAll mandatory details have been gathered! Please confirm: Is everything correct to submit? (Reply 'Yes' to confirm)`;
-      }
-
-      return response;
-    }
-
-    // Manual text submission
-    function submitManualText(overrideText = null) {
-      const input = document.getElementById('user-input-box');
-      const text = overrideText !== null ? overrideText : input.value.trim();
-      if (!text) return;
-
-      appendMessage(text, "user");
-      input.value = "";
-
-      const container = document.getElementById('chat-messages-container');
-      const statusBubble = document.createElement('div');
-      statusBubble.className = "chat-bubble status";
-      statusBubble.id = "active-indicator";
-      statusBubble.innerText = "Processing transfer details...";
-      container.appendChild(statusBubble);
-      container.scrollTop = container.scrollHeight;
-
-      setTimeout(() => {
-        document.getElementById('active-indicator')?.remove();
-        const botReply = processInputAndGenerateReply(text, false);
-        appendMessage(botReply, "bot");
-      }, 400);
-    }
-
-    // Document & Image upload handler
-    async function handleFileUpload(event) {
+    // Handles Document & Image Upload (PDF, Word, TXT, PNG/JPG OCR)
+    async function handleDocumentUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
-      appendMessage(`📎 Uploaded: ${file.name}`, "user");
+      activeDocFileName = file.name;
+      const fileExt = activeDocFileName.split('.').pop().toLowerCase();
+      let extractedText = '';
 
-      const container = document.getElementById('chat-messages-container');
-      const statusBubble = document.createElement('div');
-      statusBubble.className = "chat-bubble status";
-      statusBubble.id = "active-indicator";
-      statusBubble.innerText = file.type.startsWith('image/') 
-        ? `Running OCR analysis on ${file.name}...` 
-        : `Extracting transfer details from ${file.name}...`;
-      container.appendChild(statusBubble);
-      container.scrollTop = container.scrollHeight;
+      const uploadBtn = document.querySelector('.btn-doc-upload');
+      if (uploadBtn) {
+        uploadBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px; animation: spin 1s infinite linear;">sync</span> Analyzing...';
+      }
 
       try {
-        const text = (await extractDocumentText(file) || "").trim();
-
-        if (!text) {
-          document.getElementById('active-indicator')?.remove();
-          appendMessage("⚠️ Could not extract text from this document. Please check the file.", "bot");
-          return;
+        if (fileExt === 'pdf') {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          for (let i = 1; i <= Math.min(pdf.numPages, 4); i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            extractedText += ' ' + textContent.items.map(item => item.str).join(' ');
+          }
+        } else if (fileExt === 'docx' || fileExt === 'doc') {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          extractedText = result.value;
+        } else if (fileExt === 'txt') {
+          extractedText = await file.text();
+        } else if (['png', 'jpg', 'jpeg', 'webp', 'bmp'].includes(fileExt)) {
+          const { data: { text } } = await Tesseract.recognize(file, 'eng');
+          extractedText = text;
         }
 
-        setTimeout(() => {
-          document.getElementById('active-indicator')?.remove();
-          const botReply = processInputAndGenerateReply(text, true);
-          appendMessage(botReply, "bot");
-        }, 500);
+        extractedText = (extractedText || '').replace(/\s+/g, ' ').trim();
 
+        if (extractedText.length > 0) {
+          // Sent directly to Vertex AI Gemini Agent
+          sendDocumentToGemini(activeDocFileName, extractedText);
+        } else {
+          alert("Could not extract readable text from this file. Please make sure the file is clear.");
+        }
       } catch (err) {
-        console.error(err);
-        document.getElementById('active-indicator')?.remove();
-        appendMessage("⚠️ Error analyzing document. Please try again.", "bot");
+        console.error("Document read error:", err);
+        alert("Error parsing document: " + err.message);
+      } finally {
+        if (uploadBtn) {
+          uploadBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;">attach_file</span> Upload PDF / Word / Image';
+        }
+        event.target.value = '';
       }
-
-      event.target.value = "";
     }
 
-    // Voice recognition (Speech-to-Text)
-    let recognition = null;
-    let isRecording = false;
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    // Sends the extracted document content safely to Gemini without triggering widget character caps
+    function sendDocumentToGemini(fileName, rawContent) {
+      // Chunk content if necessary to stay safely within single turn limits (200-240 chars per key item)
+      const cleanSummary = rawContent.substring(0, 220).replace(/["'\n\r]/g, ' ');
+      const payload = `[DOC_UPLOAD:${fileName}] Content: ${cleanSummary}`;
 
-    if (SpeechRecognition) {
-      recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
 
-      recognition.onstart = function() {
-        isRecording = true;
-        const btnMic = document.getElementById('btn-mic');
-        btnMic.classList.add('recording');
-        btnMic.setAttribute('title', 'Listening... click to stop');
-        document.getElementById('user-input-box').placeholder = "Listening... Speak now...";
+      const scanForInput = (root) => {
+        if (!root) return null;
+        let input = root.querySelector('textarea, input[type="text"]');
+        if (input) return { input, root };
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        for (const el of all) {
+          if (el.shadowRoot) {
+            const res = scanForInput(el.shadowRoot);
+            if (res) return res;
+          }
+        }
+        return null;
       };
 
-      recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('user-input-box').value = transcript;
-        submitManualText(transcript);
+      const found = scanForInput(messenger) || (messenger.shadowRoot ? scanForInput(messenger.shadowRoot) : null);
+      if (found && found.input) {
+        found.input.removeAttribute('maxlength');
+        found.input.value = payload;
+        found.input.dispatchEvent(new Event('input', { bubbles: true }));
+        found.input.dispatchEvent(new Event('change', { bubbles: true }));
+
+        setTimeout(() => {
+          const sendBtn = found.root.querySelector('button[aria-label="Send"], #send-button, .send-button, button:has(svg)');
+          if (sendBtn) {
+            sendBtn.click();
+          } else {
+            const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
+            found.input.dispatchEvent(enterEvent);
+          }
+        }, 200);
+      }
+    }
+
+    // Transforms user message bubble into clean "📎 Uploaded: filename" pill
+    function transformUserBubblesToPill() {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      const scanBubbles = (root) => {
+        if (!root) return;
+        const bubbles = root.querySelectorAll ? root.querySelectorAll('.message.user-message, .df-user-message, [role="log"] > div, .message-bubble, .user-bubble') : [];
+        bubbles.forEach(b => {
+          const txt = b.innerText || '';
+          if (txt.includes('[DOC_UPLOAD:')) {
+            const match = txt.match(/\[DOC_UPLOAD:([^\]]+)\]/);
+            const fname = match ? match[1] : 'document';
+            b.innerHTML = `
+              <div style="display:inline-flex; align-items:center; gap:8px; background:#005696; color:#ffffff; padding:7px 14px; border-radius:18px; font-weight:600; font-size:13px; box-shadow: 0 2px 6px rgba(0,86,150,0.3);">
+                <span style="font-size:15px;">📎</span> Uploaded: ${fname}
+              </div>
+            `;
+          }
+        });
+
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        all.forEach(el => {
+          if (el.shadowRoot) scanBubbles(el.shadowRoot);
+        });
       };
 
-      recognition.onerror = function() { stopVoiceRecording(); };
-      recognition.onend = function() { stopVoiceRecording(); };
-    }
-
-    function toggleVoiceRecording() {
-      if (!SpeechRecognition) {
-        alert("Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.");
-        return;
-      }
-      if (isRecording) {
-        recognition.stop();
-        stopVoiceRecording();
-      } else {
-        try { recognition.start(); } catch (err) { console.error(err); }
-      }
-    }
-
-    function stopVoiceRecording() {
-      isRecording = false;
-      const btnMic = document.getElementById('btn-mic');
-      if (btnMic) {
-        btnMic.classList.remove('recording');
-        btnMic.setAttribute('title', 'Click to Speak');
-      }
-      const inputBox = document.getElementById('user-input-box');
-      if (inputBox) {
-        inputBox.placeholder = "Type or click mic to speak...";
-      }
+      scanBubbles(messenger);
+      if (messenger.shadowRoot) scanBubbles(messenger.shadowRoot);
     }
   </script>
+
+  <!-- Google Chat Messenger Component -->
+  <chat-messenger url-allowlist="*">
+    <chat-messenger-container
+      chat-title="PLC Intake Assistant"
+      chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
+      enable-file-upload
+    >
+      <chat-reset-session-button
+        slot="titlebar-actions"
+        title-text="Start new chat"
+      ></chat-reset-session-button>
+      <chat-toggle-dialog-button
+        slot="titlebar-actions"
+        title-text-expanded="Collapse"
+        title-text-collapsed="Expand"
+      ></chat-toggle-dialog-button>
+      <chat-messenger-close-button
+        slot="titlebar-actions"
+        title-text="Close"
+      ></chat-messenger-close-button>
+    </chat-messenger-container>
+  </chat-messenger>
 
 </body>
 </html>
