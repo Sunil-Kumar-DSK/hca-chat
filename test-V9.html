@@ -11,12 +11,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-  <!-- Client-side Document & OCR Libraries -->
+  <!-- Client-side Document & Image OCR Parsers -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-  <!-- Google Chat Messenger SDK & Styles -->
+  <!-- Google Chat Messenger SDK & Default Styles -->
   <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-default.css" />
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-layout.css" />
@@ -353,44 +353,6 @@
       overflow: hidden;
     }
 
-    /* Floating Upload Pill inside open chat */
-    .document-upload-bar {
-      position: fixed;
-      bottom: 110px;
-      right: 42px;
-      z-index: 1000000;
-      background: #ffffff;
-      border: 1.5px solid #bfdbfe;
-      border-radius: 12px;
-      padding: 7px 14px;
-      display: none;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.14);
-      font-size: 12.5px;
-      color: #1e293b;
-      font-weight: 500;
-    }
-
-    .btn-doc-upload {
-      background: #eff6ff;
-      border: 1.5px solid var(--hca-blue);
-      color: var(--hca-blue);
-      padding: 5px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      transition: all 0.2s;
-    }
-    .btn-doc-upload:hover {
-      background: var(--hca-blue);
-      color: #ffffff;
-    }
-
     @media (max-width: 992px) {
       .main-container { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
@@ -404,10 +366,7 @@
 </head>
 <body>
 
-  <!-- Hidden File Input for PDF, DOC, DOCX, TXT, Images -->
-  <input type="file" id="portalFileInput" accept=".pdf,.doc,.docx,.txt,image/*" style="display:none;" onchange="handleDocumentUpload(event)" />
-
-  <!-- Top Header -->
+  <!-- Top Navigation Header -->
   <header>
     <div class="logo-container">
       HCA Healthcare <span class="accent">♦</span> PLC Intake
@@ -426,7 +385,7 @@
     </p>
   </section>
 
-  <!-- Main Grid -->
+  <!-- Main Container -->
   <main class="main-container">
     <div class="features-card">
       <div class="features-grid">
@@ -461,7 +420,7 @@
           <span class="material-symbols-outlined" style="font-size: 20px;">chat</span>
           Start Intake Assistant
         </button>
-        <button class="btn-hero-dashed" onclick="triggerFileUpload()">
+        <button class="btn-hero-dashed" onclick="triggerNativeUpload()">
           <span class="material-symbols-outlined" style="font-size: 20px;">upload_file</span>
           Upload Face Sheet / Transfer PDF
         </button>
@@ -529,16 +488,7 @@
     </div>
   </main>
 
-  <!-- Floating Document Upload Bar (Visible when chat is open) -->
-  <div id="docUploadBar" class="document-upload-bar">
-    <span>📄 Have a doc or photo?</span>
-    <button class="btn-doc-upload" onclick="triggerFileUpload()">
-      <span class="material-symbols-outlined" style="font-size: 15px;">attach_file</span>
-      Upload PDF / Word / Image
-    </button>
-  </div>
-
-  <!-- Google Chat Messenger Component -->
+  <!-- Google Chat Messenger Component with enable-file-upload -->
   <chat-messenger url-allowlist="*">
     <chat-messenger-container
       chat-title="PLC Intake Assistant"
@@ -561,7 +511,7 @@
     </chat-messenger-container>
   </chat-messenger>
 
-  <!-- Google Chat SDK Script & Multi-Format Ingestion -->
+  <!-- Multi-Format Handler for Native Plus (+) Button -->
   <script>
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -580,11 +530,11 @@
         })
       );
 
-      // Periodically syncs open status and transforms user message bubble to pill
+      // Intercept internal file inputs to unlock PDF, DOC, DOCX and TXT in the file picker
       setInterval(() => {
-        syncUploadBarState();
+        interceptAndUnlockFileInputs();
         transformUserBubblesToPill();
-      }, 300);
+      }, 400);
     });
 
     function openChat() {
@@ -596,37 +546,79 @@
           if (btn) btn.click();
         }
       }
-      const docBar = document.getElementById('docUploadBar');
-      if (docBar) docBar.style.display = 'flex';
     }
 
-    function syncUploadBarState() {
-      const messenger = document.querySelector('chat-messenger');
-      const docBar = document.getElementById('docUploadBar');
-      if (!messenger || !docBar) return;
-
-      const isOpened = messenger.hasAttribute('opened') && messenger.getAttribute('opened') !== 'false';
-      docBar.style.display = isOpened ? 'flex' : 'none';
-    }
-
-    function triggerFileUpload() {
+    function triggerNativeUpload() {
       openChat();
-      document.getElementById('portalFileInput').click();
+      setTimeout(() => {
+        const messenger = document.querySelector('chat-messenger');
+        const fileInput = findInternalFileInput(messenger);
+        if (fileInput) {
+          fileInput.click();
+        }
+      }, 300);
     }
 
-    // Handles Document & Image Uploads (PDF, Word, TXT, PNG/JPG OCR)
-    async function handleDocumentUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+    // Unlocks PDF, Word, TXT, Images on the native plus (+) button's file input
+    function interceptAndUnlockFileInputs() {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
 
+      const scanAndHook = (root) => {
+        if (!root) return;
+        const inputs = root.querySelectorAll ? root.querySelectorAll('input[type="file"]') : [];
+        inputs.forEach(input => {
+          // Allow all document formats
+          if (!input.dataset.docUnlocked) {
+            input.setAttribute('accept', '.pdf,.doc,.docx,.txt,image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+            input.dataset.docUnlocked = 'true';
+
+            // Hook onchange to handle PDF, DOCX, TXT, and Images
+            input.addEventListener('change', async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+
+              const fname = file.name;
+              const fext = fname.split('.').pop().toLowerCase();
+
+              // If it's a PDF, Word doc, or TXT file, parse it and pass directly to Gemini
+              if (['pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'webp'].includes(fext)) {
+                e.stopImmediatePropagation();
+                await processDocumentAndSend(file);
+              }
+            }, true);
+          }
+        });
+
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        all.forEach(el => {
+          if (el.shadowRoot) scanAndHook(el.shadowRoot);
+        });
+      };
+
+      scanAndHook(messenger);
+      if (messenger.shadowRoot) scanAndHook(messenger.shadowRoot);
+    }
+
+    function findInternalFileInput(root) {
+      if (!root) return null;
+      let input = root.querySelector('input[type="file"]');
+      if (input) return input;
+      const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+      for (const el of all) {
+        if (el.shadowRoot) {
+          const res = findInternalFileInput(el.shadowRoot);
+          if (res) return res;
+        }
+      }
+      return null;
+    }
+
+    // Processes Document / Image and delivers payload to Gemini
+    async function processDocumentAndSend(file) {
       activeDocFileName = file.name;
       const fileExt = activeDocFileName.split('.').pop().toLowerCase();
       let rawText = '';
-
-      const uploadBtn = document.querySelector('.btn-doc-upload');
-      if (uploadBtn) {
-        uploadBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px; animation: spin 1s infinite linear;">sync</span> Analyzing...';
-      }
 
       try {
         if (fileExt === 'pdf') {
@@ -650,26 +642,21 @@
 
         rawText = (rawText || '').replace(/\s+/g, ' ').trim();
 
-        // Extract key clinical details into a clean format under 200 chars to avoid character errors
+        // Extract key clinical details under 200 chars to avoid character errors
         let compactPayload = extractClinicalPayload(activeDocFileName, rawText);
 
         if (compactPayload.length > 0) {
           sendTextSafely(compactPayload);
         } else {
-          alert("Could not extract readable text from this document. Please make sure the file is clear.");
+          sendTextSafely(`[FILE:${activeDocFileName}] Document uploaded for review.`);
         }
       } catch (err) {
-        console.error("Document read error:", err);
-        alert("Error parsing document: " + err.message);
-      } finally {
-        if (uploadBtn) {
-          uploadBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;">attach_file</span> Upload PDF / Word / Image';
-        }
-        event.target.value = '';
+        console.error("File parsing error:", err);
+        sendTextSafely(`[FILE:${activeDocFileName}] Document attached.`);
       }
     }
 
-    // Extracts all transfer fields and keeps payload under 200 chars (prevents character limit error)
+    // Entity extractor keeping payload concise (< 200 chars)
     function extractClinicalPayload(fileName, text) {
       if (!text) return '';
       let items = [];
