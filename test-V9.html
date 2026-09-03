@@ -11,12 +11,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-  <!-- Client-side Document & Image OCR Parsers -->
+  <!-- Client-side Document & OCR Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-  <!-- Google Chat Messenger SDK & Default Styles -->
+  <!-- Google Chat Messenger SDK & Styles -->
   <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-default.css" />
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-layout.css" />
@@ -337,12 +337,12 @@
       font-size: 18px;
     }
 
-    /* Floating Chat Messenger Configuration */
+    /* Google Chat Messenger Sizing & Placement */
     chat-messenger {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      z-index: 99999;
+      z-index: 999999;
       --chat-messenger-container-width: 430px;
       --chat-messenger-container-height: 640px;
     }
@@ -353,12 +353,12 @@
       overflow: hidden;
     }
 
-    /* Document Upload Bar directly above chat input */
+    /* Floating Upload Pill inside open chat */
     .document-upload-bar {
       position: fixed;
       bottom: 110px;
       right: 42px;
-      z-index: 100002;
+      z-index: 1000000;
       background: #ffffff;
       border: 1.5px solid #bfdbfe;
       border-radius: 12px;
@@ -404,10 +404,10 @@
 </head>
 <body>
 
-  <!-- Hidden Multi-Format File Input -->
+  <!-- Hidden File Input for PDF, DOC, DOCX, TXT, Images -->
   <input type="file" id="portalFileInput" accept=".pdf,.doc,.docx,.txt,image/*" style="display:none;" onchange="handleDocumentUpload(event)" />
 
-  <!-- Top Navigation Header -->
+  <!-- Top Header -->
   <header>
     <div class="logo-container">
       HCA Healthcare <span class="accent">♦</span> PLC Intake
@@ -426,7 +426,7 @@
     </p>
   </section>
 
-  <!-- Main Container -->
+  <!-- Main Grid -->
   <main class="main-container">
     <div class="features-card">
       <div class="features-grid">
@@ -529,7 +529,7 @@
     </div>
   </main>
 
-  <!-- Document Upload Floating Bar -->
+  <!-- Floating Document Upload Bar (Visible when chat is open) -->
   <div id="docUploadBar" class="document-upload-bar">
     <span>📄 Have a doc or photo?</span>
     <button class="btn-doc-upload" onclick="triggerFileUpload()">
@@ -538,7 +538,30 @@
     </button>
   </div>
 
-  <!-- Google Chat SDK Registration & Safe Document Processing -->
+  <!-- Google Chat Messenger Component -->
+  <chat-messenger url-allowlist="*">
+    <chat-messenger-container
+      chat-title="PLC Intake Assistant"
+      chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
+      enable-file-upload
+    >
+      <chat-reset-session-button
+        slot="titlebar-actions"
+        title-text="Start new chat"
+      ></chat-reset-session-button>
+      <chat-toggle-dialog-button
+        slot="titlebar-actions"
+        title-text-expanded="Collapse"
+        title-text-collapsed="Expand"
+      ></chat-toggle-dialog-button>
+      <chat-messenger-close-button
+        slot="titlebar-actions"
+        title-text="Close"
+      ></chat-messenger-close-button>
+    </chat-messenger-container>
+  </chat-messenger>
+
+  <!-- Google Chat SDK Script & Multi-Format Ingestion -->
   <script>
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -557,7 +580,7 @@
         })
       );
 
-      // Periodically syncs UI and file upload bar
+      // Periodically syncs open status and transforms user message bubble to pill
       setInterval(() => {
         syncUploadBarState();
         transformUserBubblesToPill();
@@ -568,7 +591,6 @@
       const messenger = document.querySelector('chat-messenger');
       if (messenger) {
         messenger.setAttribute('opened', 'true');
-        // If shadow button exists, click it to trigger SDK open state
         if (messenger.shadowRoot) {
           const btn = messenger.shadowRoot.querySelector('#widget-button, button, [role="button"]');
           if (btn) btn.click();
@@ -592,7 +614,7 @@
       document.getElementById('portalFileInput').click();
     }
 
-    // Handles Document & Image Upload (PDF, Word, TXT, PNG/JPG OCR)
+    // Handles Document & Image Uploads (PDF, Word, TXT, PNG/JPG OCR)
     async function handleDocumentUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -628,13 +650,13 @@
 
         rawText = (rawText || '').replace(/\s+/g, ' ').trim();
 
-        // Extract key clinical fields into a clean payload under 220 characters
+        // Extract key clinical details into a clean format under 200 chars to avoid character errors
         let compactPayload = extractClinicalPayload(activeDocFileName, rawText);
 
         if (compactPayload.length > 0) {
           sendTextSafely(compactPayload);
         } else {
-          alert("Could not extract readable text from this document. Please ensure the file is clear.");
+          alert("Could not extract readable text from this document. Please make sure the file is clear.");
         }
       } catch (err) {
         console.error("Document read error:", err);
@@ -647,7 +669,7 @@
       }
     }
 
-    // Extracts all transfer fields and keeps payload under 220 chars (avoids character limit)
+    // Extracts all transfer fields and keeps payload under 200 chars (prevents character limit error)
     function extractClinicalPayload(fileName, text) {
       if (!text) return '';
       let items = [];
@@ -656,7 +678,7 @@
       const nameMatch = text.match(/(?:full\s*name|patient\s*name|pt|^name)[:\s]+([a-zA-Z0-9_-]+(?:\s+[a-zA-Z0-9_-]+)?)/i);
       if (nameMatch) items.push(`Pt:${nameMatch[1].trim()}`);
 
-      // 2. Date of Birth (Matches "19 Feb 2000", "02/19/2000", "2000-02-19", etc.)
+      // 2. Date of Birth
       const dobMatch = text.match(/(?:dob|date of birth|birth date|born)[:\s]*([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4}|[0-9]{1,4}[-\/\.][0-9]{1,2}[-\/\.][0-9]{1,4})/i);
       if (dobMatch) items.push(`DOB:${dobMatch[1].trim()}`);
 
@@ -669,7 +691,7 @@
       if (phoneMatch) items.push(`Phone:${phoneMatch[0].trim()}`);
 
       // 5. Diagnosis / Condition
-      const dxMatch = text.match(/(?:diagnosis|dx|condition|presenting)[:\s]+([^.,;\n]{3,40})/i);
+      const dxMatch = text.match(/(?:diagnosis|dx|condition|presenting)[:\s]+([^.,;\n]{3,35})/i);
       if (dxMatch) items.push(`Dx:${dxMatch[1].trim()}`);
 
       // 6. Care Level
@@ -678,12 +700,11 @@
 
       let contentStr = items.join(', ');
 
-      // If regex found minimal fields, take clean leading segment under 160 chars
-      if (contentStr.length < 10) {
-        contentStr = text.substring(0, 150).replace(/["'\n\r]/g, ' ');
+      if (contentStr.length < 8) {
+        contentStr = text.substring(0, 140).replace(/["'\n\r]/g, ' ');
       }
 
-      return `[FILE:${fileName}] ${contentStr}`.substring(0, 220);
+      return `[FILE:${fileName}] ${contentStr}`.substring(0, 195);
     }
 
     // Sends text directly through the Google Chat Messenger widget
@@ -754,29 +775,6 @@
       if (messenger.shadowRoot) scanBubbles(messenger.shadowRoot);
     }
   </script>
-
-  <!-- Google Chat Messenger Component -->
-  <chat-messenger url-allowlist="*">
-    <chat-messenger-container
-      chat-title="PLC Intake Assistant"
-      chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
-      enable-file-upload
-    >
-      <chat-reset-session-button
-        slot="titlebar-actions"
-        title-text="Start new chat"
-      ></chat-reset-session-button>
-      <chat-toggle-dialog-button
-        slot="titlebar-actions"
-        title-text-expanded="Collapse"
-        title-text-collapsed="Expand"
-      ></chat-toggle-dialog-button>
-      <chat-messenger-close-button
-        slot="titlebar-actions"
-        title-text="Close"
-      ></chat-messenger-close-button>
-    </chat-messenger-container>
-  </chat-messenger>
 
 </body>
 </html>
