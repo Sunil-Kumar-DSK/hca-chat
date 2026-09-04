@@ -5,13 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HCA Healthcare • PLC Intake</title>
 
-  <!-- Google Fonts & Material Symbols -->
+  <!-- Google Fonts & Material Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-  <!-- Google Chat Messenger SDK & Default Stylesheets -->
+  <!-- Client-side Document & Image OCR Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <!-- Google Chat Messenger SDK & Default Styles -->
   <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-default.css" />
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-layout.css" />
@@ -40,6 +45,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      position: relative;
     }
 
     /* Top Navigation Header */
@@ -131,7 +137,7 @@
       margin: 0 auto;
     }
 
-    /* Main Container */
+    /* Main Content Container */
     .main-container {
       max-width: 1240px;
       margin: -60px auto 48px;
@@ -143,6 +149,7 @@
       align-items: start;
     }
 
+    /* Left Portal Features Card */
     .features-card {
       background: #ffffff;
       border-radius: 16px;
@@ -332,36 +339,103 @@
       font-size: 18px;
     }
 
-    /* Standard Google Chat Messenger Floating Dimensions */
-    chat-messenger {
+    /* Floating Launcher Pill */
+    .custom-launcher-pill {
       position: fixed;
       bottom: 24px;
-      right: 24px;
-      z-index: 999999;
-      --chat-messenger-container-width: 430px;
-      --chat-messenger-container-height: 640px;
+      right: 28px;
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 36px;
+      padding: 8px 18px 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+      z-index: 99998;
+      transition: all 0.25s ease;
+    }
+
+    .custom-launcher-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    .pill-icon-bubble {
+      background: var(--hca-blue);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+
+    .pill-text-block {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .pill-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1.2;
+    }
+
+    .pill-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    /* Floating Chat Window Constraints */
+    chat-messenger {
+      position: fixed !important;
+      bottom: 24px !important;
+      right: 24px !important;
+      left: auto !important;
+      top: auto !important;
+      width: 420px !important;
+      height: 640px !important;
+      max-width: calc(100vw - 32px) !important;
+      max-height: calc(100vh - 48px) !important;
+      z-index: 99999 !important;
+      display: none;
     }
 
     chat-messenger-container {
-      border-radius: 18px;
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
-      overflow: hidden;
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 18px !important;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28) !important;
+      overflow: hidden !important;
     }
 
     @media (max-width: 992px) {
       .main-container { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
       header { padding: 0 20px; }
-      chat-messenger {
-        --chat-messenger-container-width: calc(100vw - 32px);
-        --chat-messenger-container-height: calc(100vh - 48px);
-      }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Navigation Header -->
+  <!-- Hidden Multi-Format File Input (PDF, Word, TXT, Images) -->
+  <input 
+    type="file" 
+    id="portalFileInput" 
+    accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,image/*,application/pdf" 
+    style="display:none;" 
+    onchange="handleSelectedFile(event)" 
+  />
+
+  <!-- Top Navbar -->
   <header>
     <div class="logo-container">
       HCA Healthcare <span class="accent">♦</span> PLC Intake
@@ -380,7 +454,7 @@
     </p>
   </section>
 
-  <!-- Main Grid -->
+  <!-- Main Content Grid -->
   <main class="main-container">
     <div class="features-card">
       <div class="features-grid">
@@ -410,12 +484,13 @@
         </div>
       </div>
 
+      <!-- Action Buttons -->
       <div class="action-buttons-group">
         <button class="btn-hero-primary" onclick="openChat()">
           <span class="material-symbols-outlined" style="font-size: 20px;">chat</span>
           Start Intake Assistant
         </button>
-        <button class="btn-hero-dashed" onclick="openChat()">
+        <button class="btn-hero-dashed" onclick="triggerFileUpload()">
           <span class="material-symbols-outlined" style="font-size: 20px;">upload_file</span>
           Upload Face Sheet / Transfer PDF
         </button>
@@ -441,7 +516,7 @@
             <span class="material-symbols-outlined step-icon">picture_as_pdf</span>
             <div>
               <div class="step-label">Document Extraction</div>
-              <div class="step-sublabel">PDF & Word Parsing</div>
+              <div class="step-sublabel">PDF & Image OCR Parsing</div>
             </div>
           </div>
           <span class="material-symbols-outlined check-icon">check</span>
@@ -483,6 +558,17 @@
     </div>
   </main>
 
+  <!-- Bottom-Right Launcher Pill -->
+  <div class="custom-launcher-pill" id="launcherPill" onclick="openChat()">
+    <div class="pill-icon-bubble">
+      <span class="material-symbols-outlined" style="font-size: 22px;">chat</span>
+    </div>
+    <div class="pill-text-block">
+      <span class="pill-title">PLC Intake Assistant</span>
+      <span class="pill-subtitle">Transfer Requests & Document Upload</span>
+    </div>
+  </div>
+
   <!-- Google Chat Messenger Component -->
   <chat-messenger url-allowlist="*">
     <chat-messenger-container
@@ -506,29 +592,249 @@
     </chat-messenger-container>
   </chat-messenger>
 
-  <!-- Google Chat SDK Registration -->
+  <!-- Google Chat SDK Registration & Safe Multi-Format Upload Interceptor -->
   <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    let activeFileName = '';
+
     window.addEventListener("chat-messenger-loaded", () => {
-      chatSdk.registerContext(
-        chatSdk.prebuilts.ces.createContext({
-          deploymentName: "projects/810617531031/locations/us/apps/c2995ada-2e0b-4258-82f9-ad53e68295b4/deployments/92785478-94ec-47b6-ade2-2f809d3c390f",
-          tokenBroker: {
-            enableTokenBroker: true,
-            enableRecaptcha: false
-          }
-        })
-      );
+      try {
+        chatSdk.registerContext(
+          chatSdk.prebuilts.ces.createContext({
+            deploymentName: "projects/810617531031/locations/us/apps/c2995ada-2e0b-4258-82f9-ad53e68295b4/deployments/92785478-94ec-47b6-ade2-2f809d3c390f",
+            tokenBroker: {
+              enableTokenBroker: true,
+              enableRecaptcha: false
+            }
+          })
+        );
+      } catch (e) {
+        console.error("Chat SDK context error:", e);
+      }
+
+      // Periodically unlock file picker formats on native + button and style user bubbles
+      setInterval(() => {
+        unlockNativePlusButton();
+        renderCleanFileChips();
+      }, 350);
     });
 
     function openChat() {
       const messenger = document.querySelector('chat-messenger');
+      const pill = document.getElementById('launcherPill');
       if (messenger) {
+        messenger.style.display = 'block';
         messenger.setAttribute('opened', 'true');
-        if (messenger.shadowRoot) {
-          const btn = messenger.shadowRoot.querySelector('#widget-button, button, [role="button"]');
-          if (btn) btn.click();
-        }
       }
+      if (pill) pill.style.display = 'none';
+    }
+
+    function closeChat() {
+      const messenger = document.querySelector('chat-messenger');
+      const pill = document.getElementById('launcherPill');
+      if (messenger) {
+        messenger.style.display = 'none';
+        messenger.removeAttribute('opened');
+      }
+      if (pill) pill.style.display = 'flex';
+    }
+
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('chat-messenger-close-button')) {
+        closeChat();
+      }
+    });
+
+    function triggerFileUpload() {
+      openChat();
+      document.getElementById('portalFileInput').click();
+    }
+
+    // Unlocks PDF, Word, TXT, and Images on the native chat input + button
+    function unlockNativePlusButton() {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      const scanRoot = (root) => {
+        if (!root) return;
+        const fileInputs = root.querySelectorAll ? root.querySelectorAll('input[type="file"]') : [];
+        fileInputs.forEach(input => {
+          if (!input.dataset.formatUnlocked) {
+            input.setAttribute('accept', '.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,image/*,application/pdf');
+            input.dataset.formatUnlocked = 'true';
+
+            // Hook change event to process PDF / DOC / Images safely
+            input.addEventListener('change', async (event) => {
+              const file = event.target.files[0];
+              if (!file) return;
+              event.stopImmediatePropagation();
+              await processAndSendDocument(file);
+            }, true);
+          }
+        });
+
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        all.forEach(el => {
+          if (el.shadowRoot) scanRoot(el.shadowRoot);
+        });
+      };
+
+      scanRoot(messenger);
+      if (messenger.shadowRoot) scanRoot(messenger.shadowRoot);
+    }
+
+    function handleSelectedFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      processAndSendDocument(file);
+      event.target.value = '';
+    }
+
+    // Extracts text from PDF, Word, TXT, or Image and sends compact payload (< 200 chars)
+    async function processAndSendDocument(file) {
+      activeFileName = file.name;
+      const fileExt = activeFileName.split('.').pop().toLowerCase();
+      let extractedText = '';
+
+      try {
+        if (fileExt === 'pdf') {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          for (let i = 1; i <= Math.min(pdf.numPages, 4); i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            extractedText += ' ' + textContent.items.map(item => item.str).join(' ');
+          }
+        } else if (fileExt === 'docx' || fileExt === 'doc') {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          extractedText = result.value;
+        } else if (fileExt === 'txt') {
+          extractedText = await file.text();
+        } else if (['png', 'jpg', 'jpeg', 'webp', 'bmp'].includes(fileExt)) {
+          const { data: { text } } = await Tesseract.recognize(file, 'eng');
+          extractedText = text;
+        }
+
+        extractedText = (extractedText || '').replace(/\s+/g, ' ').trim();
+
+        // Extract and compact all clinical fields under 190 characters
+        const safePayload = generateClinicalSummary(activeFileName, extractedText);
+        sendPayloadToWidget(safePayload);
+
+      } catch (err) {
+        console.error("File processing error:", err);
+        sendPayloadToWidget(`[FILE:${activeFileName}] Process attached file.`);
+      }
+    }
+
+    // Entity extractor keeping the message concise to avoid character limit errors
+    function generateClinicalSummary(fileName, text) {
+      if (!text) return `[FILE:${fileName}]`;
+      let fields = [];
+
+      // 1. Patient Name
+      const nameMatch = text.match(/(?:full\s*name|patient\s*name|pt|^name)[:\s]+([a-zA-Z0-9_-]+(?:\s+[a-zA-Z0-9_-]+)?)/i);
+      if (nameMatch) fields.push(`Pt:${nameMatch[1].trim()}`);
+
+      // 2. Date of Birth (Captures 19 Feb 2000, 02/19/2000, 2000-02-19)
+      const dobMatch = text.match(/(?:dob|date of birth|birth date|born)[:\s]*([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4}|[0-9]{1,4}[-\/\.][0-9]{1,2}[-\/\.][0-9]{1,4})/i);
+      if (dobMatch) fields.push(`DOB:${dobMatch[1].trim()}`);
+
+      // 3. Gender
+      const genderMatch = text.match(/\b(male|female|gender:\s*(?:m|f|male|female))\b/i);
+      if (genderMatch) fields.push(`Gender:${genderMatch[1].toUpperCase()}`);
+
+      // 4. Phone Number / Callback
+      const phoneMatch = text.match(/(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}/);
+      if (phoneMatch) fields.push(`Phone:${phoneMatch[0].trim()}`);
+
+      // 5. Diagnosis / Condition
+      const dxMatch = text.match(/(?:diagnosis|dx|condition|presenting)[:\s]+([^.,;\n]{3,35})/i);
+      if (dxMatch) fields.push(`Dx:${dxMatch[1].trim()}`);
+
+      // 6. Care Level
+      const careMatch = text.match(/\b(ICU|CCU|Med-Surg|Step-Down|Telemetry)\b/i);
+      if (careMatch) fields.push(`Care:${careMatch[1].toUpperCase()}`);
+
+      let contentStr = fields.join(', ');
+
+      if (contentStr.length < 8) {
+        contentStr = text.substring(0, 130).replace(/["'\n\r]/g, ' ');
+      }
+
+      return `[FILE:${fileName}] ${contentStr}`.substring(0, 195);
+    }
+
+    // Sends the payload into Google's chat messenger
+    function sendPayloadToWidget(payload) {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      const findInput = (root) => {
+        if (!root) return null;
+        let el = root.querySelector('textarea, input[type="text"]');
+        if (el) return { el, root };
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        for (const item of all) {
+          if (item.shadowRoot) {
+            const res = findInput(item.shadowRoot);
+            if (res) return res;
+          }
+        }
+        return null;
+      };
+
+      const found = findInput(messenger) || (messenger.shadowRoot ? findInput(messenger.shadowRoot) : null);
+      if (found && found.el) {
+        found.el.value = payload;
+        found.el.dispatchEvent(new Event('input', { bubbles: true }));
+        found.el.dispatchEvent(new Event('change', { bubbles: true }));
+
+        setTimeout(() => {
+          const sendBtn = found.root.querySelector('button[aria-label="Send"], #send-button, .send-button, button:has(svg)');
+          if (sendBtn) {
+            sendBtn.click();
+          } else {
+            const enterEvt = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
+            found.el.dispatchEvent(enterEvt);
+          }
+        }, 150);
+      }
+    }
+
+    // Transforms the user bubble into clean "📎 Uploaded: filename" pill
+    function renderCleanFileChips() {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      const scanBubbles = (root) => {
+        if (!root) return;
+        const bubbles = root.querySelectorAll ? root.querySelectorAll('.message.user-message, .df-user-message, [role="log"] > div, .message-bubble, .user-bubble') : [];
+        bubbles.forEach(b => {
+          const txt = b.innerText || '';
+          if (txt.includes('[FILE:')) {
+            const match = txt.match(/\[FILE:([^\]]+)\]/);
+            const fname = match ? match[1] : 'document';
+            b.innerHTML = `
+              <div style="display:inline-flex; align-items:center; gap:8px; background:#005696; color:#ffffff; padding:7px 14px; border-radius:18px; font-weight:600; font-size:13px; box-shadow: 0 2px 6px rgba(0,86,150,0.3);">
+                <span style="font-size:15px;">📎</span> Uploaded: ${fname}
+              </div>
+            `;
+          }
+        });
+
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        all.forEach(el => {
+          if (el.shadowRoot) scanBubbles(el.shadowRoot);
+        });
+      };
+
+      scanBubbles(messenger);
+      if (messenger.shadowRoot) scanBubbles(messenger.shadowRoot);
     }
   </script>
 
