@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HCA Healthcare • PLC Intake</title>
 
-  <!-- Google Fonts & Material Icons -->
+  <!-- Google Fonts & Material Symbols -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-  <!-- Document Parsers (PDF.js, Mammoth.js for Word, Tesseract for OCR) -->
+  <!-- Document & OCR Parsers -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -192,10 +192,7 @@
       box-shadow: 0 4px 10px rgba(0, 86, 150, 0.25);
       transition: background 0.2s, transform 0.1s;
     }
-    .btn-hero-primary:hover {
-      background: #004578;
-      transform: translateY(-1px);
-    }
+    .btn-hero-primary:hover { background: #004578; }
 
     .btn-hero-dashed {
       background: #f8fafc;
@@ -294,7 +291,7 @@
     .step-sublabel { font-size: 11.5px; color: var(--text-muted); }
     .check-icon { color: var(--hca-blue); font-size: 18px; }
 
-    /* Google Chat Messenger Sizing & Placement */
+    /* Native Google Chat Messenger Dimensions */
     chat-messenger {
       position: fixed;
       bottom: 24px;
@@ -326,7 +323,7 @@
   <!-- Hidden Multi-Format File Input -->
   <input type="file" id="portalFileInput" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,image/*,application/pdf" style="display:none;" onchange="handleSelectedFile(event)" />
 
-  <!-- Top Navbar -->
+  <!-- Top Navigation Header -->
   <header>
     <div class="logo-container">
       HCA Healthcare <span class="accent">♦</span> PLC Intake
@@ -337,7 +334,7 @@
     </div>
   </header>
 
-  <!-- Hero Banner -->
+  <!-- Hero Section -->
   <section class="hero-section">
     <h1 class="hero-title">Patient Logistics Center <span class="orange">(PLC)</span></h1>
     <p class="hero-subtitle">
@@ -375,6 +372,7 @@
         </div>
       </div>
 
+      <!-- Action Buttons -->
       <div class="action-buttons-group">
         <button class="btn-hero-primary" onclick="openChat()">
           <span class="material-symbols-outlined" style="font-size: 20px;">chat</span>
@@ -448,30 +446,20 @@
     </div>
   </main>
 
-  <!-- Google Chat Messenger Component -->
+  <!-- Google Chat Messenger Component with native file upload enabled -->
   <chat-messenger url-allowlist="*">
     <chat-messenger-container
       chat-title="PLC Intake Assistant"
       chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
       enable-file-upload
     >
-      <chat-reset-session-button
-        slot="titlebar-actions"
-        title-text="Start new chat"
-      ></chat-reset-session-button>
-      <chat-toggle-dialog-button
-        slot="titlebar-actions"
-        title-text-expanded="Collapse"
-        title-text-collapsed="Expand"
-      ></chat-toggle-dialog-button>
-      <chat-messenger-close-button
-        slot="titlebar-actions"
-        title-text="Close"
-      ></chat-messenger-close-button>
+      <chat-reset-session-button slot="titlebar-actions" title-text="Start new chat"></chat-reset-session-button>
+      <chat-toggle-dialog-button slot="titlebar-actions" title-text-expanded="Collapse" title-text-collapsed="Expand"></chat-toggle-dialog-button>
+      <chat-messenger-close-button slot="titlebar-actions" title-text="Close"></chat-messenger-close-button>
     </chat-messenger-container>
   </chat-messenger>
 
-  <!-- Google Chat SDK Registration & Full Clinical Field Parser -->
+  <!-- Clean SDK Registration & Multi-Format Ingestion -->
   <script>
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -491,16 +479,11 @@
           })
         );
       } catch (e) {
-        console.error("Chat SDK context error:", e);
+        console.error("Chat SDK Registration Error:", e);
       }
 
-      // Unlock PDF, Word, TXT on the native + button and style file bubbles
-      setInterval(() => {
-        try {
-          unlockNativePlusButton();
-          renderCleanFileChips();
-        } catch (e) {}
-      }, 350);
+      // Automatically hook file input in chat messenger so the + button supports all document formats
+      setTimeout(unlockNativeFileInput, 1500);
     });
 
     function openChat() {
@@ -508,7 +491,7 @@
       if (messenger) {
         messenger.setAttribute('opened', 'true');
         if (messenger.shadowRoot) {
-          const btn = messenger.shadowRoot.querySelector('#widget-button, button, [role="button"]');
+          const btn = messenger.shadowRoot.querySelector('#widget-button, button');
           if (btn) btn.click();
         }
       }
@@ -519,36 +502,31 @@
       document.getElementById('portalFileInput').click();
     }
 
-    // Unlocks PDF, Word, TXT, Images on the native + button
-    function unlockNativePlusButton() {
+    function unlockNativeFileInput() {
       const messenger = document.querySelector('chat-messenger');
       if (!messenger) return;
 
-      const scanRoot = (root) => {
+      const scan = (root) => {
         if (!root) return;
         const inputs = root.querySelectorAll ? root.querySelectorAll('input[type="file"]') : [];
         inputs.forEach(input => {
-          if (!input.dataset.formatUnlocked) {
-            input.setAttribute('accept', '.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,image/*,application/pdf');
-            input.dataset.formatUnlocked = 'true';
-
-            input.addEventListener('change', async (event) => {
-              const file = event.target.files[0];
-              if (!file) return;
-              event.stopImmediatePropagation();
+          input.setAttribute('accept', '.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,image/*,application/pdf');
+          input.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+              e.stopImmediatePropagation();
               await processAndSendDocument(file);
-            }, true);
-          }
+            }
+          }, true);
         });
-
         const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
         all.forEach(el => {
-          if (el.shadowRoot) scanRoot(el.shadowRoot);
+          if (el.shadowRoot) scan(el.shadowRoot);
         });
       };
 
-      scanRoot(messenger);
-      if (messenger.shadowRoot) scanRoot(messenger.shadowRoot);
+      scan(messenger);
+      if (messenger.shadowRoot) scan(messenger.shadowRoot);
     }
 
     function handleSelectedFile(event) {
@@ -558,7 +536,7 @@
       event.target.value = '';
     }
 
-    // Extracts text from PDF, Word, TXT, or Image and captures ALL 18 fields
+    // Comprehensive Extractor: Reads all 18 fields from PDF, Word, TXT, or Image
     async function processAndSendDocument(file) {
       activeDocFileName = file.name;
       const fileExt = activeDocFileName.split('.').pop().toLowerCase();
@@ -586,27 +564,26 @@
 
         rawText = (rawText || '').replace(/\r\n/g, '\n');
 
-        // Extract ALL 18 fields and send in 2 structured, character-safe batches
-        const parts = buildComprehensiveClinicalPayloads(activeDocFileName, rawText);
+        // Extract and build safe message batches (each under 200 chars)
+        const batches = buildAllClinicalBatches(activeDocFileName, rawText);
         
-        // Send batch 1 (Demographics, Facility, Caller)
-        sendTextSafely(parts[0]);
+        // Send Batch 1 (Patient, DOB, Facility, Caller)
+        sendToWidget(batches[0]);
 
-        // Send batch 2 (Physician, Diagnosis, Care, Capabilities, EMTALA, Notes)
-        if (parts.length > 1 && parts[1]) {
+        // Send Batch 2 (Doctor, Diagnosis, Care, Capabilities, EMTALA, Notes)
+        if (batches.length > 1 && batches[1]) {
           setTimeout(() => {
-            sendTextSafely(parts[1]);
-          }, 1200);
+            sendToWidget(batches[1]);
+          }, 1400);
         }
 
       } catch (err) {
-        console.error("File parsing error:", err);
-        sendTextSafely(`[DOC:${activeDocFileName}] Error parsing file, manual review required.`);
+        console.error("Document parsing error:", err);
+        sendToWidget(`[DOC:${activeDocFileName}] Review attached document.`);
       }
     }
 
-    // Comprehensive Extractor covering ALL transfer fields in the document
-    function buildComprehensiveClinicalPayloads(fileName, text) {
+    function buildAllClinicalBatches(fileName, text) {
       let d = {};
 
       // 1. Patient Name & DOB & Gender
@@ -619,7 +596,7 @@
       const genderMatch = text.match(/\b(male|female)\b/i);
       if (genderMatch) d.gender = genderMatch[1];
 
-      // 2. Facility & Location
+      // 2. Facility & Current Location
       const facMatch = text.match(/(?:sending facility|referring facility|facility)(?:\s*&\s*current\s*location)?[:\s]+([^,\n]+)/i);
       if (facMatch) d.facility = facMatch[1].trim();
 
@@ -654,7 +631,7 @@
       const careMatch = text.match(/(?:level of care|care)[:\s]+([^,\n]+)/i) || text.match(/\b(ICU|CCU|Med-Surg|Step-Down|Telemetry)\b/i);
       if (careMatch) d.care = careMatch[1].trim();
 
-      // 7. Capabilities, Bed Concerns, Notes, EMTALA, Accepting MD
+      // 7. Capabilities, Bed Concerns, Notes, EMTALA
       const capMatch = text.match(/(?:required capabilities|capabilities needed|capabilities)[:\s]+([^,\n]+)/i);
       if (capMatch) d.caps = capMatch[1].trim();
 
@@ -667,39 +644,35 @@
       const emtalaMatch = text.match(/(?:emtala transfer statement|emtala)[:\s]+([^,\n]+)/i);
       if (emtalaMatch) d.emtala = emtalaMatch[1].trim();
 
-      const accMatch = text.match(/(?:accepting physician|accepting md)[:\s]+([a-zA-Z\s\.]+)/i);
-      if (accMatch) d.accepting = accMatch[1].trim();
-
-      // Construct Part 1 (Demographics, Facility, Caller) - safely under 200 chars
+      // Part 1: Under 195 characters
       let p1 = `[DOC:${fileName}] Pt: ${d.ptName || ''}, DOB: ${d.dob || ''}, ${d.gender || ''}. Facility: ${d.facility || ''}, ${d.loc || ''}. Caller: ${d.caller || ''} (${d.callback || ''}).`;
       
-      // Construct Part 2 (MD, Diagnosis, Care, Capabilities, EMTALA, Notes) - safely under 200 chars
-      let p2 = `[DOC Details] MD: ${d.md || ''} (${d.mdPhone || ''}). Dx: ${d.dx || ''}, Reason: ${d.reason || ''}. Care: ${d.care || ''}, ${d.spec || ''}. Caps: ${d.caps || 'None'}, EMTALA: ${d.emtala || 'N/A'}, Notes: ${d.notes || 'None'}.`;
+      // Part 2: Under 195 characters
+      let p2 = `[DOC Details] MD: ${d.md || ''} (${d.mdPhone || ''}). Dx: ${d.dx || ''}, Reason: ${d.reason || ''}. Care: ${d.care || ''}, ${d.spec || ''}. Caps: ${d.caps || 'None'}, EMTALA: ${d.emtala || 'N/A'}.`;
 
       return [p1.substring(0, 195), p2.substring(0, 195)];
     }
 
-    // Sends text directly through Google Chat widget
-    function sendTextSafely(payload) {
+    function sendToWidget(payload) {
       if (!payload || payload.trim() === '') return;
       const messenger = document.querySelector('chat-messenger');
       if (!messenger) return;
 
-      const scanForInput = (root) => {
+      const scan = (root) => {
         if (!root) return null;
         let input = root.querySelector('textarea, input[type="text"]');
         if (input) return { input, root };
         const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
         for (const el of all) {
           if (el.shadowRoot) {
-            const res = scanForInput(el.shadowRoot);
+            const res = scan(el.shadowRoot);
             if (res) return res;
           }
         }
         return null;
       };
 
-      const found = scanForInput(messenger) || (messenger.shadowRoot ? scanForInput(messenger.shadowRoot) : null);
+      const found = scan(messenger) || (messenger.shadowRoot ? scan(messenger.shadowRoot) : null);
       if (found && found.input) {
         found.input.value = payload;
         found.input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -710,42 +683,11 @@
           if (sendBtn) {
             sendBtn.click();
           } else {
-            const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
-            found.input.dispatchEvent(enterEvent);
+            const enterEvt = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
+            found.input.dispatchEvent(enterEvt);
           }
-        }, 150);
+        }, 120);
       }
-    }
-
-    // Transforms user message bubble into clean "📎 Uploaded: filename" pill
-    function renderCleanFileChips() {
-      const messenger = document.querySelector('chat-messenger');
-      if (!messenger) return;
-
-      const scanBubbles = (root) => {
-        if (!root) return;
-        const bubbles = root.querySelectorAll ? root.querySelectorAll('.message.user-message, .df-user-message, [role="log"] > div, .message-bubble, .user-bubble') : [];
-        bubbles.forEach(b => {
-          const txt = b.innerText || '';
-          if (txt.includes('[DOC:') || txt.includes('[DOC Details]')) {
-            const match = txt.match(/\[DOC:([^\]]+)\]/);
-            const fname = match ? match[1] : (activeDocFileName || 'document');
-            b.innerHTML = `
-              <div style="display:inline-flex; align-items:center; gap:8px; background:#005696; color:#ffffff; padding:7px 14px; border-radius:18px; font-weight:600; font-size:13px; box-shadow: 0 2px 6px rgba(0,86,150,0.3);">
-                <span style="font-size:15px;">📎</span> Uploaded: ${fname}
-              </div>
-            `;
-          }
-        });
-
-        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
-        all.forEach(el => {
-          if (el.shadowRoot) scanBubbles(el.shadowRoot);
-        });
-      };
-
-      scanBubbles(messenger);
-      if (messenger.shadowRoot) scanBubbles(messenger.shadowRoot);
     }
   </script>
 
