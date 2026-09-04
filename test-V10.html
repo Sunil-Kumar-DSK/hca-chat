@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HCA Healthcare • PLC Intake</title>
 
-  <!-- Google Fonts & Icons -->
+  <!-- Google Fonts & Material Symbols -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -16,7 +16,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-  <!-- Google Chat Messenger SDK & Default CSS -->
+  <!-- Google Chat Messenger SDK & Default Styles -->
   <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-default.css" />
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-layout.css" />
@@ -40,10 +40,8 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      position: relative;
     }
 
-    /* Top Navigation Header */
     header {
       background: #ffffff;
       height: 72px;
@@ -80,6 +78,7 @@
       font-weight: 600;
       font-size: 14px;
       cursor: pointer;
+      transition: background 0.2s;
     }
     .btn-nav-primary:hover { background: #004578; }
 
@@ -92,10 +91,10 @@
       font-weight: 600;
       font-size: 14px;
       cursor: pointer;
+      transition: all 0.2s;
     }
     .btn-nav-outline:hover { background: #f0f7ff; }
 
-    /* Hero Banner */
     .hero-section {
       background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
       padding: 56px 48px 100px;
@@ -120,7 +119,6 @@
       margin: 0 auto;
     }
 
-    /* Main Container */
     .main-container {
       max-width: 1240px;
       margin: -60px auto 48px;
@@ -227,7 +225,6 @@
       text-decoration: underline;
     }
 
-    /* Right Preview Flow Card */
     .queue-card {
       background: #0f172a;
       border-radius: 28px;
@@ -292,69 +289,20 @@
     .step-sublabel { font-size: 11.5px; color: var(--text-muted); }
     .check-icon { color: var(--hca-blue); font-size: 18px; }
 
-    /* Guaranteed Visible Bottom-Right Launcher Pill */
-    .custom-launcher-pill {
+    /* Google Chat Messenger Native Widget Dimensions */
+    chat-messenger {
       position: fixed;
       bottom: 24px;
-      right: 28px;
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      border-radius: 36px;
-      padding: 8px 18px 8px 10px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-      z-index: 999998;
-      transition: all 0.2s ease;
-    }
-
-    .custom-launcher-pill:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
-    }
-
-    .pill-icon-bubble {
-      background: var(--hca-blue);
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      flex-shrink: 0;
-    }
-
-    .pill-title {
-      font-size: 13.5px;
-      font-weight: 700;
-      color: var(--text-dark);
-      line-height: 1.2;
-    }
-
-    .pill-subtitle {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 500;
-      margin-top: 2px;
-    }
-
-    /* Standard Google Chat Container */
-    chat-messenger {
-      position: fixed !important;
-      bottom: 24px !important;
-      right: 24px !important;
-      z-index: 999999 !important;
-      --chat-messenger-container-width: 420px;
+      right: 24px;
+      z-index: 999999;
+      --chat-messenger-container-width: 430px;
       --chat-messenger-container-height: 640px;
     }
 
     chat-messenger-container {
-      border-radius: 18px !important;
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28) !important;
-      overflow: hidden !important;
+      border-radius: 18px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
     }
 
     @media (max-width: 992px) {
@@ -370,8 +318,14 @@
 </head>
 <body>
 
-  <!-- Hidden File Input for PDF, DOC, DOCX, TXT, Images -->
-  <input type="file" id="portalFileInput" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,image/*,application/pdf" style="display:none;" onchange="handleSelectedFile(event)" />
+  <!-- Hidden Multi-Format File Input -->
+  <input 
+    type="file" 
+    id="portalFileInput" 
+    accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,image/*,application/pdf" 
+    style="display:none;" 
+    onchange="handleSelectedFile(event)" 
+  />
 
   <!-- Top Navigation Header -->
   <header>
@@ -496,18 +450,7 @@
     </div>
   </main>
 
-  <!-- Floating Launcher Pill (Always Visible) -->
-  <div class="custom-launcher-pill" id="launcherPill" onclick="openChat()">
-    <div class="pill-icon-bubble">
-      <span class="material-symbols-outlined" style="font-size: 22px;">chat</span>
-    </div>
-    <div>
-      <div class="pill-title">PLC Intake Assistant</div>
-      <div class="pill-subtitle">Transfer Requests & Uploads</div>
-    </div>
-  </div>
-
-  <!-- Google Chat Messenger Web Component -->
+  <!-- Google Chat Messenger Component (Renders Native Floating Launcher) -->
   <chat-messenger url-allowlist="*">
     <chat-messenger-container
       chat-title="PLC Intake Assistant"
@@ -520,13 +463,13 @@
     </chat-messenger-container>
   </chat-messenger>
 
-  <!-- Complete Script -->
+  <!-- Script Engine -->
   <script>
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
-    let activeFileName = '';
+    let activeDocFileName = '';
 
     window.addEventListener("chat-messenger-loaded", () => {
       try {
@@ -539,17 +482,16 @@
             }
           })
         );
-      } catch (err) {
-        console.error("SDK Init error:", err);
+      } catch (e) {
+        console.error("SDK registration error:", e);
       }
 
-      // Automatically unlock file formats on the native + button
+      // Unlock PDF, Word, and TXT on the native + button
       setInterval(unlockChatInputFiles, 500);
     });
 
     function openChat() {
       const messenger = document.querySelector('chat-messenger');
-      const pill = document.getElementById('launcherPill');
       if (messenger) {
         messenger.setAttribute('opened', 'true');
         if (messenger.shadowRoot) {
@@ -557,23 +499,7 @@
           if (btn) btn.click();
         }
       }
-      if (pill) pill.style.display = 'none';
     }
-
-    function closeChat() {
-      const messenger = document.querySelector('chat-messenger');
-      const pill = document.getElementById('launcherPill');
-      if (messenger) {
-        messenger.removeAttribute('opened');
-      }
-      if (pill) pill.style.display = 'flex';
-    }
-
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('chat-messenger-close-button')) {
-        closeChat();
-      }
-    });
 
     function triggerFileUpload() {
       openChat();
@@ -588,9 +514,9 @@
         if (!root) return;
         const inputs = root.querySelectorAll ? root.querySelectorAll('input[type="file"]') : [];
         inputs.forEach(input => {
-          if (!input.dataset.formatUnlocked) {
+          if (!input.dataset.unlocked) {
             input.setAttribute('accept', '.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,image/*,application/pdf');
-            input.dataset.formatUnlocked = 'true';
+            input.dataset.unlocked = 'true';
             input.addEventListener('change', async (e) => {
               const file = e.target.files[0];
               if (file) {
@@ -617,8 +543,8 @@
 
     // Comprehensive Extractor: Reads all 18 fields from PDF, Word, TXT, or Image
     async function processAndSendDocument(file) {
-      activeFileName = file.name;
-      const fileExt = activeFileName.split('.').pop().toLowerCase();
+      activeDocFileName = file.name;
+      const fileExt = activeDocFileName.split('.').pop().toLowerCase();
       let rawText = '';
 
       try {
@@ -643,8 +569,8 @@
 
         rawText = (rawText || '').replace(/\r\n/g, '\n');
 
-        // Extract and build structured, safe batches
-        const batches = buildAllClinicalBatches(activeFileName, rawText);
+        // Extract and build structured batches (each under 200 chars)
+        const batches = buildAllClinicalBatches(activeDocFileName, rawText);
         
         // Send Batch 1 (Patient, DOB, Facility, Caller)
         sendToWidget(batches[0]);
@@ -658,7 +584,7 @@
 
       } catch (err) {
         console.error("Document parsing error:", err);
-        sendToWidget(`[DOC:${activeFileName}] Attached file for review.`);
+        sendToWidget(`[DOC:${activeDocFileName}] Attached file for review.`);
       }
     }
 
@@ -723,10 +649,10 @@
       const emtalaMatch = text.match(/(?:emtala transfer statement|emtala)[:\s]+([^,\n]+)/i);
       if (emtalaMatch) d.emtala = emtalaMatch[1].trim();
 
-      // Part 1
+      // Part 1: Under 195 characters
       let p1 = `[DOC:${fileName}] Pt: ${d.ptName || ''}, DOB: ${d.dob || ''}, ${d.gender || ''}. Facility: ${d.facility || ''}, ${d.loc || ''}. Caller: ${d.caller || ''} (${d.callback || ''}).`;
       
-      // Part 2
+      // Part 2: Under 195 characters
       let p2 = `[DOC Details] MD: ${d.md || ''} (${d.mdPhone || ''}). Dx: ${d.dx || ''}, Reason: ${d.reason || ''}. Care: ${d.care || ''}, ${d.spec || ''}. Caps: ${d.caps || 'None'}, EMTALA: ${d.emtala || 'N/A'}.`;
 
       return [p1.substring(0, 195), p2.substring(0, 195)];
