@@ -19,7 +19,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-  <!-- Google Chat Messenger SDK & Default Styles -->
+  <!-- Google Chat Messenger SDK & Official Stylesheets -->
   <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-default.css" />
   <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-layout.css" />
@@ -206,7 +206,7 @@
     }
     .support-footer a { color: var(--hca-blue); font-weight: 700; text-decoration: underline; }
 
-    /* Right Preview Flow Card */
+    /* Right Preview Card */
     .queue-card {
       background: #0f172a;
       border-radius: 28px;
@@ -247,7 +247,39 @@
     .step-sublabel { font-size: 11.5px; color: var(--text-muted); }
     .check-icon { color: var(--hca-blue); font-size: 18px; }
 
-    /* Google Chat Messenger Sizing */
+    /* Custom Floating Pill in Bottom-Right */
+    .chat-launcher-pill {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 36px;
+      padding: 8px 18px 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+      cursor: pointer;
+      z-index: 999998;
+    }
+    .chat-launcher-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+    }
+    .launcher-circle {
+      width: 40px;
+      height: 40px;
+      background: var(--hca-blue);
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    /* Google Chat Messenger Sizing & Placement */
     chat-messenger {
       position: fixed;
       bottom: 24px;
@@ -285,7 +317,7 @@
     onchange="handleSelectedFile(event)" 
   />
 
-  <!-- Top Navigation Header -->
+  <!-- Header -->
   <header>
     <div class="logo-container">
       HCA Healthcare <span class="accent">♦</span> PLC Intake
@@ -334,6 +366,7 @@
         </div>
       </div>
 
+      <!-- Action Buttons -->
       <div class="action-buttons-group">
         <button class="btn-hero-primary" onclick="openChat()">
           <span class="material-symbols-outlined" style="font-size: 20px;">chat</span>
@@ -407,7 +440,18 @@
     </div>
   </main>
 
-  <!-- Google Chat Messenger Component (Direct Connection to Vertex AI Agent) -->
+  <!-- Bottom-Right Launcher Pill (Always Visible on Screen) -->
+  <div class="chat-launcher-pill" id="launcherPill" onclick="openChat()">
+    <div class="launcher-circle">
+      <span class="material-symbols-outlined" style="font-size: 20px;">chat</span>
+    </div>
+    <div>
+      <div style="font-size: 13.5px; font-weight: 700; color: var(--text-dark);">PLC Intake Assistant</div>
+      <div style="font-size: 11px; color: var(--text-muted);">Transfer Requests & Uploads</div>
+    </div>
+  </div>
+
+  <!-- Google Chat Messenger Component (Live Connection to Vertex AI Agent) -->
   <chat-messenger url-allowlist="*">
     <chat-messenger-container
       chat-title="PLC Intake Assistant"
@@ -420,46 +464,105 @@
     </chat-messenger-container>
   </chat-messenger>
 
-  <!-- Google Chat SDK Registration & Backend Ingestion Engine -->
+  <!-- JavaScript Engine -->
   <script>
+    let activeDocFileName = '';
+
     window.addEventListener("chat-messenger-loaded", () => {
-      chatSdk.registerContext(
-        chatSdk.prebuilts.ces.createContext({
-          deploymentName: "projects/810617531031/locations/us/apps/c2995ada-2e0b-4258-82f9-ad53e68295b4/deployments/92785478-94ec-47b6-ade2-2f809d3c390f",
-          tokenBroker: {
-            enableTokenBroker: true,
-            enableRecaptcha: false
-          }
-        })
-      );
+      try {
+        chatSdk.registerContext(
+          chatSdk.prebuilts.ces.createContext({
+            deploymentName: "projects/810617531031/locations/us/apps/c2995ada-2e0b-4258-82f9-ad53e68295b4/deployments/92785478-94ec-47b6-ade2-2f809d3c390f",
+            tokenBroker: {
+              enableTokenBroker: true,
+              enableRecaptcha: false
+            }
+          })
+        );
+      } catch (e) {
+        console.error("SDK registration error:", e);
+      }
+
+      // Automatically unlock file formats on the native + button
+      setInterval(unlockChatInputFiles, 500);
+      setInterval(transformUserBubblesToPill, 400);
     });
 
     function openChat() {
       const messenger = document.querySelector('chat-messenger');
+      const pill = document.getElementById('launcherPill');
       if (messenger) {
         messenger.setAttribute('opened', 'true');
       }
+      if (pill) pill.style.display = 'none';
     }
+
+    function closeChat() {
+      const messenger = document.querySelector('chat-messenger');
+      const pill = document.getElementById('launcherPill');
+      if (messenger) {
+        messenger.removeAttribute('opened');
+      }
+      if (pill) pill.style.display = 'flex';
+    }
+
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('chat-messenger-close-button')) {
+        closeChat();
+      }
+    });
 
     function triggerFileUpload() {
       openChat();
       document.getElementById('portalFileInput').click();
     }
 
-    // Parses selected PDF/Word/TXT/Image and feeds the text directly to Gemini
-    async function handleSelectedFile(event) {
+    function unlockChatInputFiles() {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      const scan = (root) => {
+        if (!root) return;
+        const inputs = root.querySelectorAll ? root.querySelectorAll('input[type="file"]') : [];
+        inputs.forEach(input => {
+          if (!input.dataset.unlocked) {
+            input.setAttribute('accept', '.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,image/*,application/pdf');
+            input.dataset.unlocked = 'true';
+            input.addEventListener('change', async (e) => {
+              const file = e.target.files[0];
+              if (file) {
+                e.stopImmediatePropagation();
+                await processAndSendDocument(file);
+              }
+            }, true);
+          }
+        });
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        all.forEach(el => { if (el.shadowRoot) scan(el.shadowRoot); });
+      };
+
+      scan(messenger);
+      if (messenger.shadowRoot) scan(messenger.shadowRoot);
+    }
+
+    function handleSelectedFile(event) {
       const file = event.target.files[0];
       if (!file) return;
+      processAndSendDocument(file);
+      event.target.value = '';
+    }
 
-      const fileName = file.name;
-      const fileExt = fileName.split('.').pop().toLowerCase();
+    // Comprehensive Extractor: Reads all 18 fields from PDF, Word, TXT, or Image
+    async function processAndSendDocument(file) {
+      activeDocFileName = file.name;
+      const fileExt = activeDocFileName.split('.').pop().toLowerCase();
       let rawText = '';
 
       try {
         if (fileExt === 'pdf') {
           const arrayBuffer = await file.arrayBuffer();
           const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-          for (let i = 1; i <= Math.min(pdf.numPages, 3); i++) {
+          for (let i = 1; i <= Math.min(pdf.numPages, 4); i++) {
             const page = await pdf.getPage(i);
             const textContent = await page.getTextContent();
             rawText += ' ' + textContent.items.map(item => item.str).join(' ');
@@ -475,41 +578,124 @@
           rawText = text;
         }
 
-        rawText = (rawText || '').replace(/\s+/g, ' ').trim();
+        rawText = (rawText || '').replace(/\r\n/g, '\n');
 
-        // Send extracted content directly into the real Gemini agent turn
-        sendToRealAgent(rawText);
+        // Extract and build structured batches (each under 190 chars)
+        const batches = buildAllClinicalBatches(activeDocFileName, rawText);
+        
+        // Send Batch 1 (Patient, DOB, Facility, Caller)
+        sendToWidget(batches[0]);
+
+        // Send Batch 2 (Doctor, Diagnosis, Care, Capabilities, EMTALA, Notes)
+        if (batches.length > 1 && batches[1]) {
+          setTimeout(() => {
+            sendToWidget(batches[1]);
+          }, 1400);
+        }
 
       } catch (err) {
-        console.error("Error reading file:", err);
-        sendToRealAgent(`Uploaded file: ${fileName}`);
-      } finally {
-        event.target.value = '';
+        console.error("Document parsing error:", err);
+        sendToWidget(`[DOC:${activeDocFileName}] Attached file for review.`);
       }
     }
 
-    // Sends text into the native Google chat widget so your Vertex AI Gemini agent responds
-    function sendToRealAgent(text) {
+    function buildAllClinicalBatches(fileName, text) {
+      let d = {};
+
+      // 1. Patient Name & DOB & Gender
+      const nameMatch = text.match(/(?:patient(?:\s*name|\s*name\s*&\s*dob)?|pt|name)[:\s]+([a-zA-Z\s]+?)(?:,\s*|\s+dob|\s+\(|\n|$)/i);
+      if (nameMatch) {
+        const full = nameMatch[1].trim();
+        const parts = full.split(/\s+/);
+        d.ptFirst = parts[0];
+        d.ptLast = parts.slice(1).join(' ');
+      }
+
+      const dobMatch = text.match(/(?:dob|date of birth|birth date|born)[:\s]*([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4}|[0-9]{1,4}[-\/\.][0-9]{1,2}[-\/\.][0-9]{1,4})/i);
+      if (dobMatch) d.dob = dobMatch[1].trim();
+
+      const genderMatch = text.match(/\b(male|female)\b/i);
+      if (genderMatch) d.gender = genderMatch[1];
+
+      // 2. Facility & Current Location
+      const facMatch = text.match(/(?:sending facility|referring facility|facility)(?:\s*&\s*current\s*location)?[:\s]+([^,\n]+)/i);
+      if (facMatch) d.facility = facMatch[1].trim();
+
+      const locMatch = text.match(/(?:current\s*location|room|bed|unit)[:\s]+([^\n,]+)/i);
+      if (locMatch) d.loc = locMatch[1].trim();
+
+      // 3. Referring Physician & Direct Phone
+      const mdMatch = text.match(/(?:referring physician|referring md|doctor|dr\.)(?:\s*&\s*phone)?[:\s]+([a-zA-Z\s\.]+?)(?:,\s*|\s+phone|\s+[0-9]|\n|$)/i);
+      if (mdMatch) d.md = mdMatch[1].trim();
+
+      const mdPhoneMatch = text.match(/(?:referring physician.*?phone|md phone)[:\s]*([0-9\s()+-]{10,16})/i) || text.match(/(?:phone|tel)[:\s]*([0-9\s()+-]{10,16})/i);
+      if (mdPhoneMatch) d.mdPhone = mdPhoneMatch[1].trim();
+
+      // 4. Caller Name & Callback Info
+      const callerMatch = text.match(/(?:caller name|caller)(?:\s*&\s*callback)?[:\s]+([a-zA-Z\s,]+?)(?:,\s*[0-9]|\n|$)/i);
+      if (callerMatch) d.caller = callerMatch[1].trim();
+
+      const callbackMatch = text.match(/(?:callback info|caller callback|callback)[:\s]*([0-9\s()+-]{10,16})/i);
+      if (callbackMatch) d.callback = callbackMatch[1].trim();
+
+      // 5. Diagnosis & Reason for Transfer
+      const dxMatch = text.match(/(?:diagnosis|dx)(?:\s*&\s*reason)?[:\s]+([^,\n]+)/i);
+      if (dxMatch) d.dx = dxMatch[1].trim();
+
+      const reasonMatch = text.match(/(?:reason for transfer|reason)[:\s]+([^,\n]+)/i);
+      if (reasonMatch) d.reason = reasonMatch[1].trim();
+
+      // 6. Specialty & Level of Care
+      const specMatch = text.match(/(?:requested specialty|specialty)[:\s]+([^,\n]+)/i);
+      if (specMatch) d.spec = specMatch[1].trim();
+
+      const careMatch = text.match(/(?:level of care|care)[:\s]+([^,\n]+)/i) || text.match(/\b(ICU|CCU|Med-Surg|Step-Down|Telemetry)\b/i);
+      if (careMatch) d.care = careMatch[1].trim();
+
+      // 7. Capabilities, Bed Concerns, Notes, EMTALA
+      const capMatch = text.match(/(?:required capabilities|capabilities needed|capabilities)[:\s]+([^,\n]+)/i);
+      if (capMatch) d.caps = capMatch[1].trim();
+
+      const bedMatch = text.match(/(?:capacity\/bed concerns|bed concerns|capacity)[:\s]+([^,\n]+)/i);
+      if (bedMatch) d.bed = bedMatch[1].trim();
+
+      const notesMatch = text.match(/(?:other transfer details|other details|notes)[:\s]+([^,\n]+)/i);
+      if (notesMatch) d.notes = notesMatch[1].trim();
+
+      const emtalaMatch = text.match(/(?:emtala transfer statement|emtala)[:\s]+([^,\n]+)/i);
+      if (emtalaMatch) d.emtala = emtalaMatch[1].trim();
+
+      // Batch 1: Under 190 characters
+      let p1 = `[DOC:${fileName}] First: ${d.ptFirst || ''}, Last: ${d.ptLast || ''}, DOB: ${d.dob || ''}, ${d.gender || ''}. Facility: ${d.facility || ''}, ${d.loc || ''}. Caller: ${d.caller || ''} (${d.callback || ''}).`;
+      
+      // Batch 2: Under 190 characters
+      let p2 = `[DOC Details] MD: ${d.md || ''} (${d.mdPhone || ''}). Dx: ${d.dx || ''}, Reason: ${d.reason || ''}. Care: ${d.care || ''}, ${d.spec || ''}. Caps: ${d.caps || 'None'}, EMTALA: ${d.emtala || 'N/A'}.`;
+
+      return [p1.substring(0, 190), p2.substring(0, 190)];
+    }
+
+    function sendToWidget(payload) {
+      if (!payload || payload.trim() === '') return;
       const messenger = document.querySelector('chat-messenger');
       if (!messenger) return;
 
-      const scanForInput = (root) => {
+      const scan = (root) => {
         if (!root) return null;
         let input = root.querySelector('textarea, input[type="text"]');
         if (input) return { input, root };
         const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
         for (const el of all) {
           if (el.shadowRoot) {
-            const res = scanForInput(el.shadowRoot);
+            const res = scan(el.shadowRoot);
             if (res) return res;
           }
         }
         return null;
       };
 
-      const found = scanForInput(messenger) || (messenger.shadowRoot ? scanForInput(messenger.shadowRoot) : null);
+      const found = scan(messenger) || (messenger.shadowRoot ? scan(messenger.shadowRoot) : null);
       if (found && found.input) {
-        found.input.value = text;
+        found.input.value = payload;
         found.input.dispatchEvent(new Event('input', { bubbles: true }));
         found.input.dispatchEvent(new Event('change', { bubbles: true }));
 
@@ -521,8 +707,36 @@
             const enterEvt = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
             found.input.dispatchEvent(enterEvt);
           }
-        }, 150);
+        }, 120);
       }
+    }
+
+    function transformUserBubblesToPill() {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      const scan = (root) => {
+        if (!root) return;
+        const bubbles = root.querySelectorAll ? root.querySelectorAll('.message.user-message, .df-user-message, [role="log"] > div, .message-bubble, .user-bubble') : [];
+        bubbles.forEach(b => {
+          const txt = b.innerText || '';
+          if (txt.includes('[DOC:') || txt.includes('[DOC Details]')) {
+            const match = txt.match(/\[DOC:([^\]]+)\]/);
+            const fname = match ? match[1] : (activeDocFileName || 'document');
+            b.innerHTML = `
+              <div style="display:inline-flex; align-items:center; gap:8px; background:#005696; color:#ffffff; padding:7px 14px; border-radius:18px; font-weight:600; font-size:13px; box-shadow: 0 2px 6px rgba(0,86,150,0.3);">
+                <span style="font-size:15px;">📎</span> Uploaded: ${fname}
+              </div>
+            `;
+          }
+        });
+
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        all.forEach(el => { if (el.shadowRoot) scan(el.shadowRoot); });
+      };
+
+      scan(messenger);
+      if (messenger.shadowRoot) scan(messenger.shadowRoot);
     }
   </script>
 
