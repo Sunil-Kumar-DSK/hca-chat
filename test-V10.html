@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HCA Healthcare • PLC Intake</title>
+
+  <!-- Google Fonts & Material Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+  <!-- Document Parsers (PDF.js, Mammoth.js for Word, Tesseract for OCR) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <!-- Google Chat Messenger SDK & Default Styles -->
+  <script defer src="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/chat-messenger.js"></script>
+  <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-default.css" />
+  <link rel="stylesheet" href="https://www.gstatic.com/chat-messenger/sdk/prod/v1.16/themes/chat-messenger-layout.css" />
+
+  <style>
+    :root {
+      --hca-navy: #0b3c61;
+      --hca-blue: #005696;
+      --hca-accent-orange: #f47920;
+      --bg-gradient-start: #004b87;
+      --bg-gradient-end: #006eb4;
+      --border-color: #e2e8f0;
+      --text-dark: #1e293b;
+      --text-muted: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+
+    body {
+      background-color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #ffffff;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--hca-navy);
+      letter-spacing: -0.5px;
+    }
+
+    .logo-container span.accent {
+      color: var(--hca-accent-orange);
+      margin: 0 6px;
+    }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn-nav-primary {
+      background: var(--hca-blue);
+      color: #ffffff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-nav-primary:hover { background: #004578; }
+
+    .btn-nav-outline {
+      background: transparent;
+      color: var(--hca-blue);
+      border: 1.5px solid var(--hca-blue);
+      padding: 9px 18px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-nav-outline:hover { background: #f0f7ff; }
+
+    .hero-section {
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      padding: 56px 48px 100px;
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .hero-title {
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-title span.orange { color: var(--hca-accent-orange); }
+
+    .hero-subtitle {
+      font-size: 17px;
+      opacity: 0.95;
+      font-weight: 400;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .main-container {
+      max-width: 1240px;
+      margin: -60px auto 48px;
+      padding: 0 24px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1.65fr 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .features-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 36px 40px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--border-color);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px 28px;
+      margin-bottom: 36px;
+    }
+
+    .feature-item { display: flex; align-items: flex-start; gap: 14px; }
+
+    .feature-icon-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: var(--hca-blue);
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feature-text {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-dark);
+      line-height: 1.4;
+    }
+
+    .action-buttons-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .btn-hero-primary {
+      background: var(--hca-blue);
+      color: #ffffff;
+      border: none;
+      width: 320px;
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(0, 86, 150, 0.25);
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-hero-primary:hover {
+      background: #004578;
+      transform: translateY(-1px);
+    }
+
+    .btn-hero-dashed {
+      background: #f8fafc;
+      color: var(--hca-blue);
+      border: 1.5px dashed #93c5fd;
+      width: 320px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-hero-dashed:hover {
+      background: #eff6ff;
+      border-color: var(--hca-blue);
+    }
+
+    .support-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+    .support-footer a {
+      color: var(--hca-blue);
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    .queue-card {
+      background: #0f172a;
+      border-radius: 28px;
+      padding: 14px;
+      box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.35);
+    }
+
+    .queue-inner {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px;
+    }
+
+    .queue-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .queue-status-badge {
+      background: #dcfce7;
+      color: #15803d;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .queue-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .queue-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border: 1px solid #f1f5f9;
+      background: #f8fafc;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .step-left { display: flex; align-items: center; gap: 12px; }
+    .step-icon { color: var(--hca-blue); font-size: 20px; }
+    .step-label { font-size: 13.5px; font-weight: 600; color: var(--text-dark); }
+    .step-sublabel { font-size: 11.5px; color: var(--text-muted); }
+    .check-icon { color: var(--hca-blue); font-size: 18px; }
+
+    /* Google Chat Messenger Sizing & Placement */
+    chat-messenger {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999999;
+      --chat-messenger-container-width: 430px;
+      --chat-messenger-container-height: 640px;
+    }
+
+    chat-messenger-container {
+      border-radius: 18px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+    }
+
+    @media (max-width: 992px) {
+      .main-container { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      header { padding: 0 20px; }
+      chat-messenger {
+        --chat-messenger-container-width: calc(100vw - 32px);
+        --chat-messenger-container-height: calc(100vh - 48px);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hidden Multi-Format File Input -->
+  <input type="file" id="portalFileInput" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,image/*,application/pdf" style="display:none;" onchange="handleSelectedFile(event)" />
+
+  <!-- Top Navbar -->
+  <header>
+    <div class="logo-container">
+      HCA Healthcare <span class="accent">♦</span> PLC Intake
+    </div>
+    <div class="nav-actions">
+      <button class="btn-nav-primary" onclick="openChat()">New Transfer Request</button>
+      <button class="btn-nav-outline" onclick="window.open('https://hcahealthcare.com', '_blank')">PLC Portal</button>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="hero-section">
+    <h1 class="hero-title">Patient Logistics Center <span class="orange">(PLC)</span></h1>
+    <p class="hero-subtitle">
+      Streamlined, rapid patient intake and transfer documentation with automated face sheet extraction.
+    </p>
+  </section>
+
+  <!-- Main Content Grid -->
+  <main class="main-container">
+    <div class="features-card">
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon-box"><span class="material-symbols-outlined">description</span></div>
+          <div class="feature-text">Upload Face Sheets, PDF Charts, & Notes for Auto-Extraction</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box"><span class="material-symbols-outlined">local_hospital</span></div>
+          <div class="feature-text">Submit Urgent Care, ED, or Inpatient Transfer Requests</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box"><span class="material-symbols-outlined">verified_user</span></div>
+          <div class="feature-text">EMTALA Statements & Bed Requirement Documentation</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box"><span class="material-symbols-outlined">stethoscope</span></div>
+          <div class="feature-text">Specialty & Level of Care Matching Coordination</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box"><span class="material-symbols-outlined">assignment_turned_in</span></div>
+          <div class="feature-text">Immediate Transfer Confirmation Tracking Reference</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box"><span class="material-symbols-outlined">headset_mic</span></div>
+          <div class="feature-text">Direct Hand-off to Placement Coordinators</div>
+        </div>
+      </div>
+
+      <div class="action-buttons-group">
+        <button class="btn-hero-primary" onclick="openChat()">
+          <span class="material-symbols-outlined" style="font-size: 20px;">chat</span>
+          Start Intake Assistant
+        </button>
+        <button class="btn-hero-dashed" onclick="triggerFileUpload()">
+          <span class="material-symbols-outlined" style="font-size: 20px;">upload_file</span>
+          Upload Face Sheet / Transfer PDF
+        </button>
+      </div>
+
+      <div class="support-footer">
+        Urgent transfers or clinical questions? Call PLC directly at <a href="tel:8554226625">855-422-6625</a>
+      </div>
+    </div>
+
+    <!-- Right Flow Preview Card -->
+    <div class="queue-card">
+      <div class="queue-inner">
+        <div class="queue-header">
+          <span>Transfer Queue</span>
+          <span class="queue-status-badge">PLC Active</span>
+        </div>
+        <div class="queue-title">Active Intakes</div>
+        <div class="queue-subtitle">Transfer Intake Workflow</div>
+
+        <div class="step-item">
+          <div class="step-left">
+            <span class="material-symbols-outlined step-icon">picture_as_pdf</span>
+            <div>
+              <div class="step-label">Document Extraction</div>
+              <div class="step-sublabel">PDF & Word Parsing</div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined check-icon">check</span>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left">
+            <span class="material-symbols-outlined step-icon">person</span>
+            <div>
+              <div class="step-label">Patient Demographics</div>
+              <div class="step-sublabel">Name, DOB, Gender</div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined check-icon">check</span>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left">
+            <span class="material-symbols-outlined step-icon">single_bed</span>
+            <div>
+              <div class="step-label">Level of Care</div>
+              <div class="step-sublabel">ICU / Step-Down / Med-Surg</div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined check-icon">check</span>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left">
+            <span class="material-symbols-outlined step-icon">phone_in_talk</span>
+            <div>
+              <div class="step-label">Physician Contact</div>
+              <div class="step-sublabel">Referring MD Direct Line</div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined check-icon">check</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Google Chat Messenger Component -->
+  <chat-messenger url-allowlist="*">
+    <chat-messenger-container
+      chat-title="PLC Intake Assistant"
+      chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
+      enable-file-upload
+    >
+      <chat-reset-session-button
+        slot="titlebar-actions"
+        title-text="Start new chat"
+      ></chat-reset-session-button>
+      <chat-toggle-dialog-button
+        slot="titlebar-actions"
+        title-text-expanded="Collapse"
+        title-text-collapsed="Expand"
+      ></chat-toggle-dialog-button>
+      <chat-messenger-close-button
+        slot="titlebar-actions"
+        title-text="Close"
+      ></chat-messenger-close-button>
+    </chat-messenger-container>
+  </chat-messenger>
+
+  <!-- Google Chat SDK Registration & Full Clinical Field Parser -->
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    let activeDocFileName = '';
+
+    window.addEventListener("chat-messenger-loaded", () => {
+      try {
+        chatSdk.registerContext(
+          chatSdk.prebuilts.ces.createContext({
+            deploymentName: "projects/810617531031/locations/us/apps/c2995ada-2e0b-4258-82f9-ad53e68295b4/deployments/92785478-94ec-47b6-ade2-2f809d3c390f",
+            tokenBroker: {
+              enableTokenBroker: true,
+              enableRecaptcha: false
+            }
+          })
+        );
+      } catch (e) {
+        console.error("Chat SDK context error:", e);
+      }
+
+      // Unlock PDF, Word, TXT on the native + button and style file bubbles
+      setInterval(() => {
+        try {
+          unlockNativePlusButton();
+          renderCleanFileChips();
+        } catch (e) {}
+      }, 350);
+    });
+
+    function openChat() {
+      const messenger = document.querySelector('chat-messenger');
+      if (messenger) {
+        messenger.setAttribute('opened', 'true');
+        if (messenger.shadowRoot) {
+          const btn = messenger.shadowRoot.querySelector('#widget-button, button, [role="button"]');
+          if (btn) btn.click();
+        }
+      }
+    }
+
+    function triggerFileUpload() {
+      openChat();
+      document.getElementById('portalFileInput').click();
+    }
+
+    // Unlocks PDF, Word, TXT, Images on the native + button
+    function unlockNativePlusButton() {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      const scanRoot = (root) => {
+        if (!root) return;
+        const inputs = root.querySelectorAll ? root.querySelectorAll('input[type="file"]') : [];
+        inputs.forEach(input => {
+          if (!input.dataset.formatUnlocked) {
+            input.setAttribute('accept', '.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,image/*,application/pdf');
+            input.dataset.formatUnlocked = 'true';
+
+            input.addEventListener('change', async (event) => {
+              const file = event.target.files[0];
+              if (!file) return;
+              event.stopImmediatePropagation();
+              await processAndSendDocument(file);
+            }, true);
+          }
+        });
+
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        all.forEach(el => {
+          if (el.shadowRoot) scanRoot(el.shadowRoot);
+        });
+      };
+
+      scanRoot(messenger);
+      if (messenger.shadowRoot) scanRoot(messenger.shadowRoot);
+    }
+
+    function handleSelectedFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      processAndSendDocument(file);
+      event.target.value = '';
+    }
+
+    // Extracts text from PDF, Word, TXT, or Image and captures ALL 18 fields
+    async function processAndSendDocument(file) {
+      activeDocFileName = file.name;
+      const fileExt = activeDocFileName.split('.').pop().toLowerCase();
+      let rawText = '';
+
+      try {
+        if (fileExt === 'pdf') {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          for (let i = 1; i <= Math.min(pdf.numPages, 4); i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            rawText += ' ' + textContent.items.map(item => item.str).join(' ');
+          }
+        } else if (fileExt === 'docx' || fileExt === 'doc') {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          rawText = result.value;
+        } else if (fileExt === 'txt') {
+          rawText = await file.text();
+        } else if (['png', 'jpg', 'jpeg', 'webp', 'bmp'].includes(fileExt)) {
+          const { data: { text } } = await Tesseract.recognize(file, 'eng');
+          rawText = text;
+        }
+
+        rawText = (rawText || '').replace(/\r\n/g, '\n');
+
+        // Extract ALL 18 fields and send in 2 structured, character-safe batches
+        const parts = buildComprehensiveClinicalPayloads(activeDocFileName, rawText);
+        
+        // Send batch 1 (Demographics, Facility, Caller)
+        sendTextSafely(parts[0]);
+
+        // Send batch 2 (Physician, Diagnosis, Care, Capabilities, EMTALA, Notes)
+        if (parts.length > 1 && parts[1]) {
+          setTimeout(() => {
+            sendTextSafely(parts[1]);
+          }, 1200);
+        }
+
+      } catch (err) {
+        console.error("File parsing error:", err);
+        sendTextSafely(`[DOC:${activeDocFileName}] Error parsing file, manual review required.`);
+      }
+    }
+
+    // Comprehensive Extractor covering ALL transfer fields in the document
+    function buildComprehensiveClinicalPayloads(fileName, text) {
+      let d = {};
+
+      // 1. Patient Name & DOB & Gender
+      const nameMatch = text.match(/(?:patient(?:\s*name|\s*name\s*&\s*dob)?|pt|name)[:\s]+([a-zA-Z\s]+?)(?:,\s*|\s+dob|\s+\(|\n|$)/i);
+      if (nameMatch) d.ptName = nameMatch[1].trim();
+
+      const dobMatch = text.match(/(?:dob|date of birth|birth date|born)[:\s]*([0-9]{1,2}\s+[a-zA-Z]+\s+[0-9]{4}|[0-9]{1,4}[-\/\.][0-9]{1,2}[-\/\.][0-9]{1,4})/i);
+      if (dobMatch) d.dob = dobMatch[1].trim();
+
+      const genderMatch = text.match(/\b(male|female)\b/i);
+      if (genderMatch) d.gender = genderMatch[1];
+
+      // 2. Facility & Location
+      const facMatch = text.match(/(?:sending facility|referring facility|facility)(?:\s*&\s*current\s*location)?[:\s]+([^,\n]+)/i);
+      if (facMatch) d.facility = facMatch[1].trim();
+
+      const locMatch = text.match(/(?:current\s*location|room|bed|unit)[:\s]+([^\n,]+)/i);
+      if (locMatch) d.loc = locMatch[1].trim();
+
+      // 3. Referring Physician & Direct Phone
+      const mdMatch = text.match(/(?:referring physician|referring md|doctor|dr\.)(?:\s*&\s*phone)?[:\s]+([a-zA-Z\s\.]+?)(?:,\s*|\s+phone|\s+[0-9]|\n|$)/i);
+      if (mdMatch) d.md = mdMatch[1].trim();
+
+      const mdPhoneMatch = text.match(/(?:referring physician.*?phone|md phone)[:\s]*([0-9\s()+-]{10,16})/i) || text.match(/(?:phone|tel)[:\s]*([0-9\s()+-]{10,16})/i);
+      if (mdPhoneMatch) d.mdPhone = mdPhoneMatch[1].trim();
+
+      // 4. Caller Name & Callback Info
+      const callerMatch = text.match(/(?:caller name|caller)(?:\s*&\s*callback)?[:\s]+([a-zA-Z\s,]+?)(?:,\s*[0-9]|\n|$)/i);
+      if (callerMatch) d.caller = callerMatch[1].trim();
+
+      const callbackMatch = text.match(/(?:callback info|caller callback|callback)[:\s]*([0-9\s()+-]{10,16})/i);
+      if (callbackMatch) d.callback = callbackMatch[1].trim();
+
+      // 5. Diagnosis & Reason for Transfer
+      const dxMatch = text.match(/(?:diagnosis|dx)(?:\s*&\s*reason)?[:\s]+([^,\n]+)/i);
+      if (dxMatch) d.dx = dxMatch[1].trim();
+
+      const reasonMatch = text.match(/(?:reason for transfer|reason)[:\s]+([^,\n]+)/i);
+      if (reasonMatch) d.reason = reasonMatch[1].trim();
+
+      // 6. Specialty & Level of Care
+      const specMatch = text.match(/(?:requested specialty|specialty)[:\s]+([^,\n]+)/i);
+      if (specMatch) d.spec = specMatch[1].trim();
+
+      const careMatch = text.match(/(?:level of care|care)[:\s]+([^,\n]+)/i) || text.match(/\b(ICU|CCU|Med-Surg|Step-Down|Telemetry)\b/i);
+      if (careMatch) d.care = careMatch[1].trim();
+
+      // 7. Capabilities, Bed Concerns, Notes, EMTALA, Accepting MD
+      const capMatch = text.match(/(?:required capabilities|capabilities needed|capabilities)[:\s]+([^,\n]+)/i);
+      if (capMatch) d.caps = capMatch[1].trim();
+
+      const bedMatch = text.match(/(?:capacity\/bed concerns|bed concerns|capacity)[:\s]+([^,\n]+)/i);
+      if (bedMatch) d.bed = bedMatch[1].trim();
+
+      const notesMatch = text.match(/(?:other transfer details|other details|notes)[:\s]+([^,\n]+)/i);
+      if (notesMatch) d.notes = notesMatch[1].trim();
+
+      const emtalaMatch = text.match(/(?:emtala transfer statement|emtala)[:\s]+([^,\n]+)/i);
+      if (emtalaMatch) d.emtala = emtalaMatch[1].trim();
+
+      const accMatch = text.match(/(?:accepting physician|accepting md)[:\s]+([a-zA-Z\s\.]+)/i);
+      if (accMatch) d.accepting = accMatch[1].trim();
+
+      // Construct Part 1 (Demographics, Facility, Caller) - safely under 200 chars
+      let p1 = `[DOC:${fileName}] Pt: ${d.ptName || ''}, DOB: ${d.dob || ''}, ${d.gender || ''}. Facility: ${d.facility || ''}, ${d.loc || ''}. Caller: ${d.caller || ''} (${d.callback || ''}).`;
+      
+      // Construct Part 2 (MD, Diagnosis, Care, Capabilities, EMTALA, Notes) - safely under 200 chars
+      let p2 = `[DOC Details] MD: ${d.md || ''} (${d.mdPhone || ''}). Dx: ${d.dx || ''}, Reason: ${d.reason || ''}. Care: ${d.care || ''}, ${d.spec || ''}. Caps: ${d.caps || 'None'}, EMTALA: ${d.emtala || 'N/A'}, Notes: ${d.notes || 'None'}.`;
+
+      return [p1.substring(0, 195), p2.substring(0, 195)];
+    }
+
+    // Sends text directly through Google Chat widget
+    function sendTextSafely(payload) {
+      if (!payload || payload.trim() === '') return;
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      const scanForInput = (root) => {
+        if (!root) return null;
+        let input = root.querySelector('textarea, input[type="text"]');
+        if (input) return { input, root };
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        for (const el of all) {
+          if (el.shadowRoot) {
+            const res = scanForInput(el.shadowRoot);
+            if (res) return res;
+          }
+        }
+        return null;
+      };
+
+      const found = scanForInput(messenger) || (messenger.shadowRoot ? scanForInput(messenger.shadowRoot) : null);
+      if (found && found.input) {
+        found.input.value = payload;
+        found.input.dispatchEvent(new Event('input', { bubbles: true }));
+        found.input.dispatchEvent(new Event('change', { bubbles: true }));
+
+        setTimeout(() => {
+          const sendBtn = found.root.querySelector('button[aria-label="Send"], #send-button, .send-button, button:has(svg)');
+          if (sendBtn) {
+            sendBtn.click();
+          } else {
+            const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
+            found.input.dispatchEvent(enterEvent);
+          }
+        }, 150);
+      }
+    }
+
+    // Transforms user message bubble into clean "📎 Uploaded: filename" pill
+    function renderCleanFileChips() {
+      const messenger = document.querySelector('chat-messenger');
+      if (!messenger) return;
+
+      const scanBubbles = (root) => {
+        if (!root) return;
+        const bubbles = root.querySelectorAll ? root.querySelectorAll('.message.user-message, .df-user-message, [role="log"] > div, .message-bubble, .user-bubble') : [];
+        bubbles.forEach(b => {
+          const txt = b.innerText || '';
+          if (txt.includes('[DOC:') || txt.includes('[DOC Details]')) {
+            const match = txt.match(/\[DOC:([^\]]+)\]/);
+            const fname = match ? match[1] : (activeDocFileName || 'document');
+            b.innerHTML = `
+              <div style="display:inline-flex; align-items:center; gap:8px; background:#005696; color:#ffffff; padding:7px 14px; border-radius:18px; font-weight:600; font-size:13px; box-shadow: 0 2px 6px rgba(0,86,150,0.3);">
+                <span style="font-size:15px;">📎</span> Uploaded: ${fname}
+              </div>
+            `;
+          }
+        });
+
+        const all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+        all.forEach(el => {
+          if (el.shadowRoot) scanBubbles(el.shadowRoot);
+        });
+      };
+
+      scanBubbles(messenger);
+      if (messenger.shadowRoot) scanBubbles(messenger.shadowRoot);
+    }
+  </script>
+
+</body>
+</html>
